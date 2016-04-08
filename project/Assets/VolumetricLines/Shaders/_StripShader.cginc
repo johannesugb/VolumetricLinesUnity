@@ -80,14 +80,13 @@
 	{
 		fixed4 tx = tex2D(_MainTex, i.uv);
 		
-		if (tx.a > _LightSaberFactor)
-		{
-			return fixed4(1.0, 1.0, 1.0, tx.a);
-		}
-		else
-		{
-			return tx * _Color;
-		}
+		return
+			tx.a > _LightSaberFactor
+			?
+			fixed4(1.0, 1.0, 1.0, tx.a)
+			:
+			tx * _Color
+		;
 	}
 	
 #endif

@@ -59,14 +59,13 @@
 #ifdef VOL_LINE_SHDMODE_FAST
 		return tx;
 #else
-		if (tx.a > _LightSaberFactor)
-		{
-			return fixed4(1.0, 1.0, 1.0, tx.a);
-		}
-		else
-		{
-			return tx * _Color;
-		}
+		return
+			tx.a > _LightSaberFactor
+			?
+			fixed4(1.0, 1.0, 1.0, tx.a)
+			:
+			tx * _Color
+		;
 #endif
 	}
 	
