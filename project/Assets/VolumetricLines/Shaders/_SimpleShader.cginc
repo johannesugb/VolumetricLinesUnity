@@ -3,34 +3,31 @@
 	
 	#include "UnityCG.cginc"
 	
-	sampler2D _MainTex;
-	float4 _MainTex_ST;
+	// half4 _MainTex_ST;
 	float _LineWidth;
 	float _LineScale;
 	float _CAMERA_FOV = 60.0f;
-#if !defined(VOL_LINE_SHDMODE_FAST)
-	float _LightSaberFactor;
-	float4 _Color;
-#endif
 	
 	struct a2v
 	{
 		float4 vertex : POSITION;
 		float3 normal : NORMAL;
-		float4 texcoord : TEXCOORD0;
+		half2 texcoord : TEXCOORD0;
 		float2 texcoord1 : TEXCOORD1;
 	};
 	
 	struct v2f
 	{
-		float4 pos : POSITION;
-		float2 uv : TEXCOORD0;
+		float4 pos : SV_POSITION;
+		half2 uv : TEXCOORD0;
 	};
 	
 	v2f vert (a2v v)
 	{
 		v2f o;
-		o.uv = TRANSFORM_TEX (v.texcoord, _MainTex);
+		// o.uv = TRANSFORM_TEX (v.texcoord, _MainTex);
+		// since this shader isn't designed for tiled textures anyway, no need to transform texture:
+		o.uv = v.texcoord;
 		
 		float4 vMVP = mul(UNITY_MATRIX_MVP, v.vertex);
 		float4 otherPos = float4(v.normal.xyz, 1.0);
@@ -47,16 +44,24 @@
 		return o;
 	}
 	
-	float4 frag(v2f i) : COLOR
+	
+	
+#if !defined(VOL_LINE_SHDMODE_FAST)
+	fixed _LightSaberFactor;
+	fixed4 _Color;
+#endif
+	sampler2D _MainTex;
+
+	fixed4 frag(v2f i) : SV_Target
 	{
-		float4 tx = tex2D (_MainTex, i.uv);
+		fixed4 tx = tex2D(_MainTex, i.uv);
 		
 #ifdef VOL_LINE_SHDMODE_FAST
 		return tx;
 #else
 		if (tx.a > _LightSaberFactor)
 		{
-			return float4(1.0, 1.0, 1.0, tx.a);
+			return fixed4(1.0, 1.0, 1.0, tx.a);
 		}
 		else
 		{

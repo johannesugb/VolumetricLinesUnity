@@ -19,7 +19,7 @@
 /// 
 Shader "VolumetricLine/Strip-AlphaBlended" {
 	Properties {
-		_MainTex ("Base (RGB)", 2D) = "white" {}
+		[NoScaleOffset] _MainTex ("Base (RGB)", 2D) = "white" {}
 		_Color ("Main Color", Color) = (1,1,1,1)
 		_LineWidth ("Line Width", Range(0.01, 100)) = 1.0
 		_LineScale ("Line Scale", Float) = 1.0
