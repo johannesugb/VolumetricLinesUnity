@@ -14,6 +14,9 @@
 /// Thanks for bugfixes and improvements to Unity Forum User "Mistale"
 /// http://forum.unity3d.com/members/102350-Mistale
 /// 
+/// Shader code optimization and cleanup by Lex Darlog (aka DRL)
+/// http://forum.unity3d.com/members/lex-drl.67487/
+/// 
 Shader "VolumetricLine/Additive" {
 	Properties {
 		_MainTex ("Base (RGB)", 2D) = "white" {}
@@ -23,7 +26,15 @@ Shader "VolumetricLine/Additive" {
 		_LightSaberFactor ("LightSaberFactor", Range(0.0, 1.0)) = 0.9
 	}
 	SubShader {
-		Tags { "RenderType"="Geometry" "Queue" = "Transparent" }
+		// batching is forcefully disabled here because the shader simply won't work with it:
+		Tags {
+			"DisableBatching"="True"
+			"RenderType"="Transparent"
+			"Queue"="Transparent"
+			"IgnoreProjector"="True"
+			"ForceNoShadowCasting"="True"
+			"PreviewType"="Plane"
+		}
 		LOD 200
 		
 		Pass {

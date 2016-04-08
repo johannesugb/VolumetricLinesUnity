@@ -14,6 +14,9 @@
 /// Thanks for bugfixes and improvements to Unity Forum User "Mistale"
 /// http://forum.unity3d.com/members/102350-Mistale
 /// 
+/// Shader code optimization and cleanup by Lex Darlog (aka DRL)
+/// http://forum.unity3d.com/members/lex-drl.67487/
+/// 
 Shader "VolumetricLine/Fast-Additive" {
 	Properties {
 		_MainTex ("Base (RGB)", 2D) = "white" {}
@@ -21,7 +24,15 @@ Shader "VolumetricLine/Fast-Additive" {
 		_LineScale ("Line Scale", Float) = 1.0
 	}
 	SubShader {
-		Tags { "RenderType"="Geometry" "Queue" = "Transparent" }
+		// batching is forcefully disabled here because the shader simply won't work with it:
+		Tags {
+			"DisableBatching"="True"
+			"RenderType"="Transparent"
+			"Queue"="Transparent"
+			"IgnoreProjector"="True"
+			"ForceNoShadowCasting"="True"
+			"PreviewType"="Plane"
+		}
 		LOD 200
 		
 		Pass {
@@ -38,6 +49,7 @@ Shader "VolumetricLine/Fast-Additive" {
 				#pragma fragment frag
 				#pragma multi_compile FOV_SCALING_OFF FOV_SCALING_ON
 				
+				// tell the cginc file that this is a simplified version of the shader:
 				#define VOL_LINE_SHDMODE_FAST
 				
 				#include "_SimpleShader.cginc"
