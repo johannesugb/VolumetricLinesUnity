@@ -1,15 +1,17 @@
-#ifndef VOL_LINE_STRIP_SHADER_SIMPLE_INC
-#define VOL_LINE_STRIP_SHADER_SIMPLE_INC
+#ifndef VOL_LINE_SIMPLE_SHADER_INC
+#define VOL_LINE_SIMPLE_SHADER_INC
 	
 	#include "UnityCG.cginc"
 	
 	sampler2D _MainTex;
 	float4 _MainTex_ST;
-	float4 _Color;
 	float _LineWidth;
 	float _LineScale;
-	float _LightSaberFactor;
 	float _CAMERA_FOV = 60.0f;
+#if !defined(VOL_LINE_SHDMODE_FAST)
+	float _LightSaberFactor;
+	float4 _Color;
+#endif
 	
 	struct a2v
 	{
@@ -49,6 +51,9 @@
 	{
 		float4 tx = tex2D (_MainTex, i.uv);
 		
+#ifdef VOL_LINE_SHDMODE_FAST
+		return tx;
+#else
 		if (tx.a > _LightSaberFactor)
 		{
 			return float4(1.0, 1.0, 1.0, tx.a);
@@ -57,6 +62,7 @@
 		{
 			return tx * _Color;
 		}
+#endif
 	}
 	
 #endif

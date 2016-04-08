@@ -38,7 +38,9 @@ Shader "VolumetricLine/Fast-AlphaBlended" {
 				#pragma fragment frag
 				#pragma multi_compile FOV_SCALING_OFF FOV_SCALING_ON
 				
-				#include "_FastShader.cginc"
+				#define VOL_LINE_SHDMODE_FAST
+				
+				#include "_SimpleShader.cginc"
 			ENDCG
 		}
 	}
