@@ -1,4 +1,4 @@
-/// Render a single volumetric line using an additive shader
+/// Render a single volumetric line using an additive shader which does not support changing the color
 /// 
 /// Based on the Volumetric lines algorithm by Sebastien Hillaire
 /// http://sebastien.hillaire.free.fr/index.php?option=com_content&view=article&id=57&Itemid=74
@@ -14,13 +14,11 @@
 /// Thanks for bugfixes and improvements to Unity Forum User "Mistale"
 /// http://forum.unity3d.com/members/102350-Mistale
 /// 
-Shader "VolumetricLine/VolumetricLineAdditive" {
+Shader "VolumetricLine/Fast-Additive" {
 	Properties {
 		_MainTex ("Base (RGB)", 2D) = "white" {}
-		_Color ("Main Color", Color) = (1,1,1,1)
 		_LineWidth ("Line Width", Range(0.01, 100)) = 1.0
 		_LineScale ("Line Scale", Float) = 1.0
-		_LightSaberFactor ("LightSaberFactor", Range(0.0, 1.0)) = 0.9
 	}
 	SubShader {
 		Tags { "RenderType"="Geometry" "Queue" = "Transparent" }
@@ -40,7 +38,7 @@ Shader "VolumetricLine/VolumetricLineAdditive" {
 				#pragma fragment frag
 				#pragma multi_compile FOV_SCALING_OFF FOV_SCALING_ON
 				
-				#include "_SimpleShader.cginc"
+				#include "_FastShader.cginc"
 			ENDCG
 		}
 	}

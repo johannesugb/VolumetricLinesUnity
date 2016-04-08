@@ -1,4 +1,4 @@
-/// Render a volumetric line strip using an additive shader
+/// Render a single volumetric line using an additive shader
 /// 
 /// Based on the Volumetric lines algorithm by Sebastien Hillaire
 /// http://sebastien.hillaire.free.fr/index.php?option=com_content&view=article&id=57&Itemid=74
@@ -14,7 +14,7 @@
 /// Thanks for bugfixes and improvements to Unity Forum User "Mistale"
 /// http://forum.unity3d.com/members/102350-Mistale
 /// 
-Shader "VolumetricLine/VolumetricLineStripAdditive" {
+Shader "VolumetricLine/Additive" {
 	Properties {
 		_MainTex ("Base (RGB)", 2D) = "white" {}
 		_Color ("Main Color", Color) = (1,1,1,1)
@@ -40,7 +40,7 @@ Shader "VolumetricLine/VolumetricLineStripAdditive" {
 				#pragma fragment frag
 				#pragma multi_compile FOV_SCALING_OFF FOV_SCALING_ON
 				
-				#include "_StripShader.cginc"
+				#include "_SimpleShader.cginc"
 			ENDCG
 		}
 	}
