@@ -43,8 +43,10 @@
 			clipPos_other.xy/clipPos_other.w // screen-space position of the other end
 		);
 		
-		clipPos.x += lineDirProj.x * v.texcoord1.x + lineDirProj.y * v.texcoord1.y;
-		clipPos.y += lineDirProj.y * v.texcoord1.x - lineDirProj.x * v.texcoord1.y;
+		clipPos.xy +=
+			v.texcoord1.x * lineDirProj +
+			v.texcoord1.y * float2(lineDirProj.y, -lineDirProj.x)
+		;
 		o.pos = clipPos;
 		return o;
 	}

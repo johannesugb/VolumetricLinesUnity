@@ -52,17 +52,18 @@
 		
 		if (distance(v.prevPos, v.nextPos) < 1.0)
 		{
-			clipPos.x = clipPos.x + lineDirProj_prev.x * v.texcoord1.x;
-			clipPos.y = clipPos.y + lineDirProj_prev.y * v.texcoord1.x;
-			clipPos.x = clipPos.x + lineDirProj_prev.y * v.texcoord1.y;
-			clipPos.y = clipPos.y - lineDirProj_prev.x * v.texcoord1.y;
+			clipPos.xy +=
+				v.texcoord1.x * lineDirProj_prev +
+				v.texcoord1.y * float2(lineDirProj_prev.y, -lineDirProj_prev.x)
+			;
 		}
 		else
 		{
-			clipPos.x = clipPos.x + ((lineDirProj_prev.x * v.texcoord1.x - lineDirProj_next.x * v.texcoord1.x) * .5);
-			clipPos.y = clipPos.y + ((lineDirProj_prev.y * v.texcoord1.x - lineDirProj_next.y * v.texcoord1.x) * .5);
-			clipPos.x = clipPos.x + ((lineDirProj_prev.y * v.texcoord1.y - lineDirProj_next.y * v.texcoord1.y) * .5);
-			clipPos.y = clipPos.y - ((lineDirProj_prev.x * v.texcoord1.y - lineDirProj_next.x * v.texcoord1.y) * .5);
+			float2 deltaNextPrev = lineDirProj_prev - lineDirProj_next;
+			clipPos.xy += 0.5 * (
+				v.texcoord1.x * deltaNextPrev +
+				v.texcoord1.y * float2(deltaNextPrev.y, -deltaNextPrev.x)
+			);
 		}
 		
 		o.pos = clipPos;
