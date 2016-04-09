@@ -11,7 +11,7 @@
 	struct a2v
 	{
 		float4 vertex : POSITION;
-		float3 normal : NORMAL;
+		float3 otherPos : NORMAL; // object-space position of the other end
 		half2 texcoord : TEXCOORD0;
 		float2 texcoord1 : TEXCOORD1;
 	};
@@ -29,18 +29,23 @@
 		// since this shader isn't designed for tiled textures anyway, no need to transform texture:
 		o.uv = v.texcoord;
 		
-		float4 vMVP = mul(UNITY_MATRIX_MVP, v.vertex);
-		float4 otherPos = float4(v.normal.xyz, 1.0);
-		float4 otherMVP = mul(UNITY_MATRIX_MVP, otherPos);
-		float scaledLineWidth = _LineWidth * _LineScale;
+		float4 clipPos = mul(UNITY_MATRIX_MVP, v.vertex);
+		float4 clipPos_other = mul(UNITY_MATRIX_MVP, float4(v.otherPos, 1.0));
+		float scaledLineWidth = _LineWidth * _LineScale
 #if FOV_SCALING_ON
-		scaledLineWidth *= (60.0 / _CAMERA_FOV); // 60 = 180 / scaling factor
+			* 60.0 / _CAMERA_FOV // 60 = 180 / scaling factor
 #endif
-		float2 lineDirProj = scaledLineWidth * normalize((vMVP.xy/vMVP.w) - (otherMVP.xy/otherMVP.w));
+		;
 		
-		vMVP.x = vMVP.x + lineDirProj.x * v.texcoord1.x + lineDirProj.y * v.texcoord1.y;
-		vMVP.y = vMVP.y + lineDirProj.y * v.texcoord1.x - lineDirProj.x * v.texcoord1.y;
-		o.pos = vMVP;
+		// screen-space offset vector:
+		float2 lineDirProj = scaledLineWidth * normalize(
+			clipPos.xy/clipPos.w - // screen-space pos of current end
+			clipPos_other.xy/clipPos_other.w // screen-space position of the other end
+		);
+		
+		clipPos.x += lineDirProj.x * v.texcoord1.x + lineDirProj.y * v.texcoord1.y;
+		clipPos.y += lineDirProj.y * v.texcoord1.x - lineDirProj.x * v.texcoord1.y;
+		o.pos = clipPos;
 		return o;
 	}
 	

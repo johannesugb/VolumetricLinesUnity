@@ -11,8 +11,8 @@
 	struct a2v
 	{
 		float4 vertex : POSITION;
-		float3 normal : NORMAL;
-		float3 tangent : TANGENT;
+		float3 prevPos : NORMAL;
+		float3 nextPos : TANGENT;
 		half2 texcoord : TEXCOORD0;
 		float2 texcoord1 : TEXCOORD1;
 	};
@@ -30,43 +30,42 @@
 		// since this shader isn't designed for tiled textures anyway, no need to transform texture:
 		o.uv = v.texcoord;
 		
-		float4 vMVP = mul(UNITY_MATRIX_MVP, v.vertex);
+		float4 clipPos = mul(UNITY_MATRIX_MVP, v.vertex);
+		float4 clipPos_prev = mul(UNITY_MATRIX_MVP, float4(v.prevPos, 1.0));
+		float4 clipPos_next = mul(UNITY_MATRIX_MVP, float4(v.nextPos, 1.0));
 		
-		float4 prev = float4(v.normal.xyz, 1.0);
-		float4 prevMVP = mul(UNITY_MATRIX_MVP, prev);
-		
-		float4 next = float4(v.tangent.xyz, 1.0);
-		float4 nextMVP = mul(UNITY_MATRIX_MVP, next);
-		
-		float scaledLineWidth = _LineWidth * _LineScale;
+		float scaledLineWidth = _LineWidth * _LineScale
 #if FOV_SCALING_ON
-		scaledLineWidth *= (60.0 / _CAMERA_FOV); // 60 = 180 / scaling factor
+			* 60.0 / _CAMERA_FOV // 60 = 180 / scaling factor
 #endif
+		;
 		
-		float2 lineDirProjPrev = scaledLineWidth * normalize((vMVP.xy/vMVP.w) - (prevMVP.xy/prevMVP.w));
-		//		if (sign(prevMVP.w) != sign(vMVP.w))
-		//			lineDirProjPrev = -lineDirProjPrev;
+		// screen-space offset vectors from previous/next to current:
+		float2 scrPos = clipPos.xy/clipPos.w;
+		float2 lineDirProj_prev = scaledLineWidth * normalize(scrPos - clipPos_prev.xy/clipPos_prev.w);
+		//		if (sign(clipPos_prev.w) != sign(clipPos.w))
+		//			lineDirProj_prev = -lineDirProj_prev;
 		
-		float2 lineDirProjNext = scaledLineWidth * normalize((vMVP.xy/vMVP.w) - (nextMVP.xy/nextMVP.w));
-		//		if (sign(nextMVP.w) != sign(vMVP.w))
-		//			lineDirProjNext = -lineDirProjNext;
+		float2 lineDirProj_next = scaledLineWidth * normalize(scrPos - clipPos_next.xy/clipPos_next.w);
+		//		if (sign(clipPos_next.w) != sign(clipPos.w))
+		//			lineDirProj_next = -lineDirProj_next;
 		
-		if (distance(prev, next) < 1.0)
+		if (distance(v.prevPos, v.nextPos) < 1.0)
 		{
-			vMVP.x = vMVP.x + lineDirProjPrev.x * v.texcoord1.x;
-			vMVP.y = vMVP.y + lineDirProjPrev.y * v.texcoord1.x;
-			vMVP.x = vMVP.x + lineDirProjPrev.y * v.texcoord1.y;
-			vMVP.y = vMVP.y - lineDirProjPrev.x * v.texcoord1.y;
+			clipPos.x = clipPos.x + lineDirProj_prev.x * v.texcoord1.x;
+			clipPos.y = clipPos.y + lineDirProj_prev.y * v.texcoord1.x;
+			clipPos.x = clipPos.x + lineDirProj_prev.y * v.texcoord1.y;
+			clipPos.y = clipPos.y - lineDirProj_prev.x * v.texcoord1.y;
 		}
 		else
 		{
-			vMVP.x = vMVP.x + ((lineDirProjPrev.x * v.texcoord1.x - lineDirProjNext.x * v.texcoord1.x) * .5);
-			vMVP.y = vMVP.y + ((lineDirProjPrev.y * v.texcoord1.x - lineDirProjNext.y * v.texcoord1.x) * .5);
-			vMVP.x = vMVP.x + ((lineDirProjPrev.y * v.texcoord1.y - lineDirProjNext.y * v.texcoord1.y) * .5);
-			vMVP.y = vMVP.y - ((lineDirProjPrev.x * v.texcoord1.y - lineDirProjNext.x * v.texcoord1.y) * .5);
+			clipPos.x = clipPos.x + ((lineDirProj_prev.x * v.texcoord1.x - lineDirProj_next.x * v.texcoord1.x) * .5);
+			clipPos.y = clipPos.y + ((lineDirProj_prev.y * v.texcoord1.x - lineDirProj_next.y * v.texcoord1.x) * .5);
+			clipPos.x = clipPos.x + ((lineDirProj_prev.y * v.texcoord1.y - lineDirProj_next.y * v.texcoord1.y) * .5);
+			clipPos.y = clipPos.y - ((lineDirProj_prev.x * v.texcoord1.y - lineDirProj_next.x * v.texcoord1.y) * .5);
 		}
 		
-		o.pos = vMVP;
+		o.pos = clipPos;
 		return o;
 	}
 	
