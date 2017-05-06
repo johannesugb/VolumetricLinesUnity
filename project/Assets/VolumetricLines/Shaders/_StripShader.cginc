@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 #ifndef VOL_LINE_STRIP_SHADER_INC
 #define VOL_LINE_STRIP_SHADER_INC
 	
@@ -30,9 +32,9 @@
 		// since this shader isn't designed for tiled textures anyway, no need to transform texture:
 		o.uv = v.texcoord;
 		
-		float4 clipPos = mul(UNITY_MATRIX_MVP, v.vertex);
-		float4 clipPos_prev = mul(UNITY_MATRIX_MVP, float4(v.prevPos, 1.0));
-		float4 clipPos_next = mul(UNITY_MATRIX_MVP, float4(v.nextPos, 1.0));
+		float4 clipPos = UnityObjectToClipPos(v.vertex);
+		float4 clipPos_prev = UnityObjectToClipPos(float4(v.prevPos, 1.0));
+		float4 clipPos_next = UnityObjectToClipPos(float4(v.nextPos, 1.0));
 		
 		float scaledLineWidth = _LineWidth * _LineScale
 #if FOV_SCALING_ON

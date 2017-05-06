@@ -20,7 +20,9 @@ public class VolumetricLineBehaviorEditor : Editor
 	public override void OnInspectorGUI()
 	{
 		if (m_Instance == null)
+        {
 			return;
+        }
 		this.DrawDefaultInspector();
 		ExposeProperties.Expose(m_fields);
 	}

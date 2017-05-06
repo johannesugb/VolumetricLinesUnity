@@ -19,9 +19,11 @@ public class VolumetricLineStripBehaviorEditor : Editor
 	
 	public override void OnInspectorGUI()
 	{
-		if (m_Instance == null)
-			return;
-		this.DrawDefaultInspector();
+        if (m_Instance == null)
+        {
+            return;
+        }
+        this.DrawDefaultInspector();
 		ExposeProperties.Expose(m_fields);
 	}
 }

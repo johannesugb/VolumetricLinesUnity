@@ -6,7 +6,7 @@ namespace VolumetricLines
 	/// <summary>
 	/// Render a line strip consisting of multiple VolumetricLineBehavior pieces stitched together
 	/// 
-	/// Based on the Volumetric lines algorithm by Sébastien Hillaire
+	/// Based on the Volumetric lines algorithm by Sebastien Hillaire
 	/// http://sebastien.hillaire.free.fr/index.php?option=com_content&view=article&id=57&Itemid=74
 	/// 
 	/// Thread in the Unity3D Forum:
@@ -19,6 +19,10 @@ namespace VolumetricLines
 	/// 
 	/// Thanks for bugfixes and improvements to Unity Forum User "Mistale"
 	/// http://forum.unity3d.com/members/102350-Mistale
+    /// 
+    /// /// Shader code optimization and cleanup by Lex Darlog (aka DRL)
+    /// http://forum.unity3d.com/members/lex-drl.67487/
+    /// 
 	/// </summary>
 	public class VolumetricMultiLineBehavior : MonoBehaviour 
 	{

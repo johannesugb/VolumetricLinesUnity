@@ -7,3 +7,5 @@
 *.apk
 project/Library/
 project/Temp/
+obj/
+.vs/

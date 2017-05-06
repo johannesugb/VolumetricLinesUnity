@@ -7,7 +7,7 @@ namespace VolumetricLines
 	/// <summary>
 	/// Render a line strip of volumetric lines
 	/// 
-	/// Based on the Volumetric lines algorithm by SÃ©bastien Hillaire
+	/// Based on the Volumetric lines algorithm by Sebastien Hillaire
 	/// http://sebastien.hillaire.free.fr/index.php?option=com_content&view=article&id=57&Itemid=74
 	/// 
 	/// Thread in the Unity3D Forum:
@@ -20,14 +20,16 @@ namespace VolumetricLines
 	/// 
 	/// Thanks for bugfixes and improvements to Unity Forum User "Mistale"
 	/// http://forum.unity3d.com/members/102350-Mistale
+    /// 
+    /// /// Shader code optimization and cleanup by Lex Darlog (aka DRL)
+    /// http://forum.unity3d.com/members/lex-drl.67487/
+    /// 
 	/// </summary>
 	[RequireComponent(typeof(MeshFilter))]
 	[RequireComponent(typeof(Renderer))]
+    [ExecuteInEditMode]
 	public class VolumetricLineStripBehavior : MonoBehaviour 
 	{
-		private bool m_updateLineColor;
-		private bool m_updateLineWidth;
-
 		#region member variables
 		/// <summary>
 		/// Set to true to change the material's color to the color specified with "Line Color"
@@ -78,7 +80,11 @@ namespace VolumetricLines
 		public Color LineColor 
 		{
 			get { return m_lineColor; }
-			set { m_lineColor = value; m_updateLineColor = true; }
+			set
+            {
+                m_lineColor = value;
+                GetComponent<Renderer>().sharedMaterial.color = m_lineColor;
+            }
 		}
 		
 		/// <summary>
@@ -89,7 +95,11 @@ namespace VolumetricLines
 		public float LineWidth 
 		{
 			get { return m_lineWidth; }
-			set { m_lineWidth = value; m_updateLineWidth = true; }
+			set
+            {
+                m_lineWidth = value;
+                GetComponent<Renderer>().sharedMaterial.SetFloat("_LineWidth", m_lineWidth);
+            }
 		}
 		#endregion
 
@@ -106,7 +116,7 @@ namespace VolumetricLines
 		{
 			UpdateLineVertices(m_lineVertices);
 			// Need to duplicate the material, otherwise multiple volume lines would interfere
-			GetComponent<Renderer>().material = GetComponent<Renderer>().material;
+			GetComponent<Renderer>().material = GetComponent<Renderer>().sharedMaterial;
 			if (m_setLineColorAtStart)
 			{
 				GetComponent<Renderer>().sharedMaterial.color = m_lineColor;
@@ -118,8 +128,6 @@ namespace VolumetricLines
 				m_lineWidth = GetComponent<Renderer>().sharedMaterial.GetFloat("_LineWidth");
 			}
 			GetComponent<Renderer>().sharedMaterial.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
-			m_updateLineColor = false;
-			m_updateLineWidth = false;
 		}
 
 		/// <summary>
@@ -241,6 +249,7 @@ namespace VolumetricLines
 			mesh.uv = texCoords;
 			mesh.uv2 = vertexOffsets;
 			mesh.SetIndices(indices, MeshTopology.Triangles, 0);
+            mesh.RecalculateBounds();
 			GetComponent<MeshFilter>().mesh = mesh;
 		}
 
@@ -250,18 +259,8 @@ namespace VolumetricLines
 			{
 				GetComponent<Renderer>().sharedMaterial.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
 			}
-			if (m_updateLineColor)
-			{
-				GetComponent<Renderer>().sharedMaterial.color = m_lineColor;
-				m_updateLineColor = false;
-			}
-			if (m_updateLineWidth)
-			{
-				GetComponent<Renderer>().sharedMaterial.SetFloat("_LineWidth", m_lineWidth);
-				m_updateLineWidth = false;
-			}
 		}
-
+        
 		void OnDrawGizmos()
 		{
 			Gizmos.color = Color.green;
