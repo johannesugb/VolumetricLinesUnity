@@ -33,7 +33,12 @@
 		
 		float4 clipPos = UnityObjectToClipPos(v.vertex);
 		float4 clipPos_other = UnityObjectToClipPos(float4(v.otherPos, 1.0));
-		float scaledLineWidth = _LineWidth * _LineScale
+
+		float aspectRatio = _ScreenParams.x / _ScreenParams.y;
+		float2 ssPos = float2(clipPos.x * aspectRatio, clipPos.y);
+		float2 ssPos_other = float2(clipPos_other.x * aspectRatio, clipPos_other.y);
+
+		float scaledLineWidth = _LineWidth * _LineScale * (((aspectRatio - 1.0) * 0.5) + 1.0)
 #if FOV_SCALING_ON
 			* 60.0 / _CAMERA_FOV // 60 = 180 / scaling factor
 #endif
@@ -41,14 +46,16 @@
 		
 		// screen-space offset vector:
 		float2 lineDirProj = scaledLineWidth * normalize(
-			clipPos.xy/clipPos.w - // screen-space pos of current end
-			clipPos_other.xy/clipPos_other.w // screen-space position of the other end
+			ssPos.xy/clipPos.w - // screen-space pos of current end
+			ssPos_other.xy/clipPos_other.w // screen-space position of the other end
 		);
 		
-		clipPos.xy +=
+		float2 offset =
 			v.texcoord1.x * lineDirProj +
 			v.texcoord1.y * float2(lineDirProj.y, -lineDirProj.x)
 		;
+		clipPos.x += offset.x / aspectRatio;
+		clipPos.y += offset.y;
 		o.pos = clipPos;
 		return o;
 	}
