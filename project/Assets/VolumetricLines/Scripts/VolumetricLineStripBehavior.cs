@@ -65,7 +65,6 @@ namespace VolumetricLines
 		/// Set to false to leave the color like in the original material.
 		/// Does not have any effect after Start() has been called.
 		/// </summary>
-		[ExposeProperty]
 		public bool SetLineColorAtStart 
 		{
 			get { return m_setLineColorAtStart; }
@@ -76,7 +75,6 @@ namespace VolumetricLines
 		/// Gets or sets the color of the line. This can be used during runtime
 		/// regardless of SetLinePropertiesAtStart-property's value.
 		/// </summary>
-		[ExposeProperty]
 		public Color LineColor 
 		{
 			get { return m_lineColor; }
@@ -91,7 +89,6 @@ namespace VolumetricLines
 		/// Gets or sets the width of the line. This can be used during runtime
 		/// regardless of SetLineColorAtStart-propertie's value.
 		/// </summary>
-		[ExposeProperty]
 		public float LineWidth 
 		{
 			get { return m_lineWidth; }

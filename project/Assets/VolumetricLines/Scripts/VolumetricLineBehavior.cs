@@ -27,154 +27,130 @@ namespace VolumetricLines
 	/// </summary>
 	[RequireComponent(typeof(MeshFilter))]
 	[RequireComponent(typeof(Renderer))]
-    [ExecuteInEditMode]
-    public class VolumetricLineBehavior : MonoBehaviour 
+	[ExecuteInEditMode]
+	public class VolumetricLineBehavior : MonoBehaviour 
 	{
 		#region private variables
+		/// <summary>
+		/// Template material to be used
+		/// </summary>
+		[SerializeField]
+		public Material m_templateMaterial;
+
+		/// <summary>
+		/// Set to false in order to change the material's properties as specified in this script.
+		/// Set to true in order to *initially* leave the material's properties as they are in the template material.
+		/// </summary>
+		[SerializeField] 
+		private bool m_doNotOverwriteTemplateMaterialProperties;
+
 		/// <summary>
 		/// The start position relative to the GameObject's origin
 		/// </summary>
 		[SerializeField] 
-		[HideInInspector]
 		private Vector3 m_startPos;
 		
 		/// <summary>
 		/// The end position relative to the GameObject's origin
 		/// </summary>
 		[SerializeField] 
-		[HideInInspector]
 		private Vector3 m_endPos = new Vector3(0f, 0f, 100f);
-
-		/// <summary>
-		/// Set to true to change the material's color to the color specified with "Line Color".
-		/// Set to false to leave the color like in the original material.
-		/// </summary>
-		[SerializeField] 
-		[HideInInspector]
-		private bool m_setLinePropertiesAtStart;
 
 		/// <summary>
 		/// Line Color
 		/// </summary>
 		[SerializeField] 
-		[HideInInspector]
 		private Color m_lineColor;
 
 		/// <summary>
 		/// The width of the line
 		/// </summary>
 		[SerializeField] 
-		[HideInInspector]
 		private float m_lineWidth;
-		
 
-		private static readonly Vector2[] m_vline_texCoords = {
-			new Vector2(1.0f, 1.0f),
-			new Vector2(1.0f, 0.0f),
-			new Vector2(0.5f, 1.0f),
-			new Vector2(0.5f, 0.0f),
-			new Vector2(0.5f, 0.0f),
-			new Vector2(0.5f, 1.0f),
-			new Vector2(0.0f, 0.0f),
-			new Vector2(0.0f, 1.0f),
-		};
-
-
-		private static readonly Vector2[] m_vline_vertexOffsets = {
-			 new Vector2(1.0f,	 1.0f),
-			 new Vector2(1.0f,	-1.0f),
-			 new Vector2(0.0f,	 1.0f),
-			 new Vector2(0.0f,	-1.0f),
-			 new Vector2(0.0f,	 1.0f),
-			 new Vector2(0.0f,	-1.0f),
-			 new Vector2(1.0f,	 1.0f),
-			 new Vector2(1.0f,	-1.0f)
-		};
-
-		private static readonly int[] m_vline_indices =
-		{
-			2, 1, 0,
-			3, 1, 2,
-			4, 3, 2,
-			5, 4, 2,
-			4, 5, 6,
-			6, 5, 7
-		};
+		private Material m_material;
 		#endregion
 
-		#region properties shown in inspector via ExposeProperty
-		/// <summary>
-		/// Set or get the start position relative to the GameObject's origin
-		/// </summary>
-		[ExposeProperty]
-		public Vector3 StartPos
-		{
-			get { return m_startPos; }
-			set 
-			{ 
-				m_startPos = value; 
-				SetStartAndEndPoints(m_startPos, m_endPos);
-			}
-		}
+		#region properties
 
-		/// <summary>
-		/// Set or get the end position relative to the GameObject's origin
-		/// </summary>
-		[ExposeProperty]
-		public Vector3 EndPos 
+		public Color LineColor
 		{
-			get { return m_endPos; }
-			set 
-			{
-				m_endPos = value; 
-				SetStartAndEndPoints(m_startPos, m_endPos);
-			}
-		}
-
-		/// <summary>
-		/// Set to true to change the line material's color to the color specified via 'LineColor' property.
-		/// Set to false to leave the color like in the original material.
-		/// Does not have any effect after Start() has been called.
-		/// </summary>
-		[ExposeProperty]
-		public bool SetLinePropertiesAtStart 
-		{
-			get { return m_setLinePropertiesAtStart; }
-			set { m_setLinePropertiesAtStart = value; }
-		}
-
-		/// <summary>
-		/// Gets or sets the color of the line. This can be used during runtime
-		/// regardless of SetLinePropertiesAtStart-property's value.
-		/// </summary>
-		[ExposeProperty]
-		public Color LineColor 
-		{
-			get { return m_lineColor; }
+			get { return m_lineColor;  }
 			set
-            {
-                m_lineColor = value;
-                GetComponent<Renderer>().sharedMaterial.color = m_lineColor;
-            }
+			{
+				m_lineColor = value;
+				m_material.color = m_lineColor;
+			}
 		}
 
-		/// <summary>
-		/// Gets or sets the width of the line. This can be used during runtime
-		/// regardless of SetLineColorAtStart-propertie's value.
-		/// </summary>
-		[ExposeProperty]
-		public float LineWidth 
+		public float LineWidth
 		{
 			get { return m_lineWidth; }
 			set
-            {
-                m_lineWidth = value;
-                GetComponent<Renderer>().sharedMaterial.SetFloat("_LineWidth", m_lineWidth);
-            }
+			{
+				m_lineWidth = value;
+				m_material.SetFloat("_LineWidth", m_lineWidth);
+			}
 		}
-		#endregion
 
+		public Vector3 StartPos
+		{
+			get { return m_startPos; }
+			set
+			{
+				m_startPos = value;
+				SetStartAndEndPoints(m_startPos, m_endPos);
+			}
+		}
+
+		public Vector3 EndPos
+		{
+			get { return m_endPos; }
+			set
+			{
+				m_endPos = value;
+				SetStartAndEndPoints(m_startPos, m_endPos);
+			}
+		}
+
+		#endregion
+		
 		#region methods
+		private void CreateMaterial()
+		{
+			if (null != m_templateMaterial && null == m_material)
+			{
+				m_material = Material.Instantiate(m_templateMaterial);
+				GetComponent<Renderer>().sharedMaterial = m_material;
+				SetAllMaterialProperties();
+			}
+		}
+
+		private void DestroyMaterial()
+		{
+			if (null != m_material)
+			{
+				DestroyImmediate(m_material);
+				m_material = null;
+			}
+		}
+
+		private void SetAllMaterialProperties()
+		{
+			SetStartAndEndPoints(m_startPos, m_endPos);
+
+			if (null != m_material)
+			{
+				if (!m_doNotOverwriteTemplateMaterialProperties)
+				{
+					m_material.color = m_lineColor;
+					m_material.SetFloat("_LineWidth", m_lineWidth);
+				}
+
+				m_material.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
+			}
+		}
+
 		/// <summary>
 		/// Sets the start and end points - updates the data of the Mesh.
 		/// </summary>
@@ -210,7 +186,9 @@ namespace VolumetricLines
                 mesh.RecalculateBounds();
 			}
 		}
-		
+		#endregion
+
+		#region event functions
 		// Vertex data is updated only in Start() unless m_dynamic is set to true
 		void Start () 
 		{
@@ -240,32 +218,32 @@ namespace VolumetricLines
 			Mesh mesh = new Mesh();
 			mesh.vertices = vertexPositions;
 			mesh.normals = other;
-			mesh.uv = m_vline_texCoords;
-			mesh.uv2 = m_vline_vertexOffsets;
-			mesh.SetIndices(m_vline_indices, MeshTopology.Triangles, 0);
+			mesh.uv = VolumetricLineVertexData.TexCoords;
+			mesh.uv2 = VolumetricLineVertexData.VertexOffsets;
+			mesh.SetIndices(VolumetricLineVertexData.Indices, MeshTopology.Triangles, 0);
             mesh.RecalculateBounds();
 			GetComponent<MeshFilter>().mesh = mesh;
-            // Need to duplicate the material, otherwise multiple volume lines would interfere
-            GetComponent<Renderer>().material = GetComponent<Renderer>().sharedMaterial;
-			if (SetLinePropertiesAtStart)
-			{
-				GetComponent<Renderer>().sharedMaterial.color = m_lineColor;
-				GetComponent<Renderer>().sharedMaterial.SetFloat("_LineWidth", m_lineWidth);
-			}
-			else
-			{
-				m_lineColor = GetComponent<Renderer>().sharedMaterial.color;
-				m_lineWidth = GetComponent<Renderer>().sharedMaterial.GetFloat("_LineWidth");
-			}
-			GetComponent<Renderer>().sharedMaterial.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
+			CreateMaterial();
 		}
 
+		void OnDestroy()
+		{
+			DestroyMaterial();
+		}
+		
 		void Update()
 		{
-			if (transform.hasChanged)
+			if (transform.hasChanged && null != m_material)
 			{
-				GetComponent<Renderer>().sharedMaterial.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
+				m_material.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
 			}
+		}
+
+		void OnValidate()
+		{
+			// This function is called when the script is loaded or a value is changed in the inspector (Called in the editor only).
+			//  => make sure, everything stays up-to-date
+			SetAllMaterialProperties();
 		}
 	
 		void OnDrawGizmos()

@@ -40,9 +40,13 @@
 		float2 ssPos = float2(clipPos.x * aspectRatio, clipPos.y);
 		float2 ssPos_other = float2(clipPos_other.x * aspectRatio, clipPos_other.y);
 
+		float t = unity_CameraProjection._m11;
+		const float Rad2Deg = 180 / UNITY_PI;
+		float fov = atan(1.0f / t) * 2.0 * Rad2Deg;
+
 		float scaledLineWidth = _LineWidth * _LineScale
 #if FOV_SCALING_ON
-			* 60.0 / _CAMERA_FOV // 60 = 180 / scaling factor
+			* 60.0 / fov // 60 = 180 / scaling factor
 #endif
 		;
 		
@@ -60,6 +64,7 @@
 		clipPos.x += offset.x / aspectRatio;
 		clipPos.y += offset.y;
 		o.pos = clipPos;
+
 		return o;
 	}
 	
