@@ -1,5 +1,3 @@
-// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
 #ifndef VOL_LINE_SIMPLE_SHADER_INC
 #define VOL_LINE_SIMPLE_SHADER_INC
 	
@@ -8,7 +6,6 @@
 	// half4 _MainTex_ST;
 	float _LineWidth;
 	float _LineScale;
-	float _CAMERA_FOV = 60.0f;
 	
 	struct a2v
 	{
@@ -27,8 +24,6 @@
 	v2f vert (a2v v)
 	{
 		v2f o;
-		// o.uv = TRANSFORM_TEX (v.texcoord, _MainTex);
-		// since this shader isn't designed for tiled textures anyway, no need to transform texture:
 		o.uv = v.texcoord;
 		
 		float4 clipPos = UnityObjectToClipPos(v.vertex);
@@ -40,15 +35,13 @@
 		float2 ssPos = float2(clipPos.x * aspectRatio, clipPos.y);
 		float2 ssPos_other = float2(clipPos_other.x * aspectRatio, clipPos_other.y);
 
-		float t = unity_CameraProjection._m11;
-		const float Rad2Deg = 180 / UNITY_PI;
-		float fov = atan(1.0f / t) * 2.0 * Rad2Deg;
+		float scaledLineWidth = _LineWidth * _LineScale;
 
-		float scaledLineWidth = _LineWidth * _LineScale
-#if FOV_SCALING_ON
-			* 60.0 / fov // 60 = 180 / scaling factor
+#ifndef FOV_SCALING_OFF
+		float t = unity_CameraProjection._m11;
+		float fov = atan(1.0f / t) * 360.0 / UNITY_PI; // = 2 * 180 / UNITY_PI = 2 * rad2deg
+		scaledLineWidth = scaledLineWidth * 60.0 / fov;
 #endif
-		;
 		
 		// screen-space offset vector:
 		float2 lineDirProj = scaledLineWidth * normalize(
@@ -67,8 +60,6 @@
 
 		return o;
 	}
-	
-	
 	
 #if !defined(VOL_LINE_SHDMODE_FAST)
 	fixed _LightSaberFactor;

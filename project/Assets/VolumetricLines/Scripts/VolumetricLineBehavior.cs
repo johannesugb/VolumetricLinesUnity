@@ -26,7 +26,7 @@ namespace VolumetricLines
     /// 
 	/// </summary>
 	[RequireComponent(typeof(MeshFilter))]
-	[RequireComponent(typeof(Renderer))]
+	[RequireComponent(typeof(MeshRenderer))]
 	[ExecuteInEditMode]
 	public class VolumetricLineBehavior : MonoBehaviour 
 	{
@@ -68,11 +68,28 @@ namespace VolumetricLines
 		[SerializeField] 
 		private float m_lineWidth;
 
+		/// <summary>
+		/// Light saber factor
+		/// </summary>
+		[SerializeField]
+		[Range(0.0f, 1.0f)]
+		private float m_lightSaberFactor;
+
+		/// <summary>
+		/// This GameObject's specific material
+		/// </summary>
 		private Material m_material;
+		
+		/// <summary>
+		/// This GameObject's mesh filter
+		/// </summary>
+		private MeshFilter m_meshFilter;
 		#endregion
 
 		#region properties
-
+		/// <summary>
+		/// Get or set the line color of this volumetric line's material
+		/// </summary>
 		public Color LineColor
 		{
 			get { return m_lineColor;  }
@@ -83,6 +100,9 @@ namespace VolumetricLines
 			}
 		}
 
+		/// <summary>
+		/// Get or set the line width of this volumetric line's material
+		/// </summary>
 		public float LineWidth
 		{
 			get { return m_lineWidth; }
@@ -93,6 +113,22 @@ namespace VolumetricLines
 			}
 		}
 
+		/// <summary>
+		/// Get or set the light saber factor of this volumetric line's material
+		/// </summary>
+		public float LightSaberFactor
+		{
+			get { return m_lightSaberFactor; }
+			set
+			{
+				m_lightSaberFactor = value;
+				m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
+			}
+		}
+
+		/// <summary>
+		/// Get or set the start position of this volumetric line's mesh
+		/// </summary>
 		public Vector3 StartPos
 		{
 			get { return m_startPos; }
@@ -103,6 +139,9 @@ namespace VolumetricLines
 			}
 		}
 
+		/// <summary>
+		/// Get or set the end position of this volumetric line's mesh
+		/// </summary>
 		public Vector3 EndPos
 		{
 			get { return m_endPos; }
@@ -116,16 +155,22 @@ namespace VolumetricLines
 		#endregion
 		
 		#region methods
+		/// <summary>
+		/// Creates a copy of the template material for this instance
+		/// </summary>
 		private void CreateMaterial()
 		{
 			if (null != m_templateMaterial && null == m_material)
 			{
 				m_material = Material.Instantiate(m_templateMaterial);
-				GetComponent<Renderer>().sharedMaterial = m_material;
+				GetComponent<MeshRenderer>().sharedMaterial = m_material;
 				SetAllMaterialProperties();
 			}
 		}
 
+		/// <summary>
+		/// Destroys the copy of the template material which was used for this instance
+		/// </summary>
 		private void DestroyMaterial()
 		{
 			if (null != m_material)
@@ -135,6 +180,9 @@ namespace VolumetricLines
 			}
 		}
 
+		/// <summary>
+		/// Sets all material properties (color, width, start-, endpos)
+		/// </summary>
 		private void SetAllMaterialProperties()
 		{
 			SetStartAndEndPoints(m_startPos, m_endPos);
@@ -145,6 +193,13 @@ namespace VolumetricLines
 				{
 					m_material.color = m_lineColor;
 					m_material.SetFloat("_LineWidth", m_lineWidth);
+					m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
+				}
+				else
+				{
+					m_lineColor = m_material.color;
+					m_lineWidth = m_material.GetFloat("_LineWidth");
+					m_lightSaberFactor = m_material.GetFloat("_LightSaberFactor");
 				}
 
 				m_material.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
@@ -177,19 +232,21 @@ namespace VolumetricLines
 				startPoint,
 				startPoint,
 			};
-			
-			var mesh = GetComponent<MeshFilter>().sharedMesh;
-			if (null != mesh)
+
+			if (null != m_meshFilter)
 			{
-				mesh.vertices = vertexPositions;
-				mesh.normals = other;
-                mesh.RecalculateBounds();
+				var mesh = m_meshFilter.sharedMesh;
+				if (null != mesh)
+				{
+					mesh.vertices = vertexPositions;
+					mesh.normals = other;
+					mesh.RecalculateBounds();
+				}
 			}
 		}
 		#endregion
 
 		#region event functions
-		// Vertex data is updated only in Start() unless m_dynamic is set to true
 		void Start () 
 		{
 			Vector3[] vertexPositions = {
@@ -222,7 +279,8 @@ namespace VolumetricLines
 			mesh.uv2 = VolumetricLineVertexData.VertexOffsets;
 			mesh.SetIndices(VolumetricLineVertexData.Indices, MeshTopology.Triangles, 0);
             mesh.RecalculateBounds();
-			GetComponent<MeshFilter>().mesh = mesh;
+			m_meshFilter = GetComponent<MeshFilter>();
+			m_meshFilter.mesh = mesh;
 			CreateMaterial();
 		}
 
@@ -243,6 +301,7 @@ namespace VolumetricLines
 		{
 			// This function is called when the script is loaded or a value is changed in the inspector (Called in the editor only).
 			//  => make sure, everything stays up-to-date
+			CreateMaterial();
 			SetAllMaterialProperties();
 		}
 	
