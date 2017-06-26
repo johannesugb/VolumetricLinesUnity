@@ -30,28 +30,49 @@ namespace VolumetricLines
     [ExecuteInEditMode]
 	public class VolumetricLineStripBehavior : MonoBehaviour 
 	{
-		#region member variables
+		#region private variables
 		/// <summary>
-		/// Set to true to change the material's color to the color specified with "Line Color"
+		/// Template material to be used
 		/// </summary>
-		[SerializeField] 
-		[HideInInspector]
-		private bool m_setLineColorAtStart;
-		
+		[SerializeField]
+		public Material m_templateMaterial;
+
 		/// <summary>
-		/// The material is set to this color in Start() if "Set Material Color" is set to true
+		/// Set to false in order to change the material's properties as specified in this script.
+		/// Set to true in order to *initially* leave the material's properties as they are in the template material.
 		/// </summary>
-		[SerializeField] 
-		[HideInInspector]
+		[SerializeField]
+		private bool m_doNotOverwriteTemplateMaterialProperties;
+
+		/// <summary>
+		/// Line Color
+		/// </summary>
+		[SerializeField]
 		private Color m_lineColor;
 
 		/// <summary>
 		/// The width of the line
 		/// </summary>
-		[SerializeField] 
-		[HideInInspector]
+		[SerializeField]
 		private float m_lineWidth;
 
+		/// <summary>
+		/// Light saber factor
+		/// </summary>
+		[SerializeField]
+		[Range(0.0f, 1.0f)]
+		private float m_lightSaberFactor;
+
+		/// <summary>
+		/// This GameObject's specific material
+		/// </summary>
+		private Material m_material;
+
+		/// <summary>
+		/// This GameObject's mesh filter
+		/// </summary>
+		private MeshFilter m_meshFilter;
+		
 		/// <summary>
 		/// The vertices of the line
 		/// </summary>
@@ -59,46 +80,81 @@ namespace VolumetricLines
 		private Vector3[] m_lineVertices;
 		#endregion
 
-		#region properties shown in inspector via ExposeProperty
+		#region properties
 		/// <summary>
-		/// Set to true to change the line material's color to the color specified via 'LineColor' property.
-		/// Set to false to leave the color like in the original material.
-		/// Does not have any effect after Start() has been called.
+		/// Gets or sets the tmplate material.
+		/// Setting this will only have an impact once. 
+		/// Subsequent changes will be ignored.
 		/// </summary>
-		public bool SetLineColorAtStart 
+		public Material TemplateMaterial
 		{
-			get { return m_setLineColorAtStart; }
-			set { m_setLineColorAtStart = value; }
+			get { return m_templateMaterial; }
+			set { m_templateMaterial = value; }
 		}
-		
+
 		/// <summary>
-		/// Gets or sets the color of the line. This can be used during runtime
-		/// regardless of SetLinePropertiesAtStart-property's value.
+		/// Gets or sets whether or not the template material properties
+		/// should be used (false) or if the properties of this MonoBehavior
+		/// instance should be used (true, default).
+		/// Setting this will only have an impact once, and then only if it
+		/// is set before TemplateMaterial has been assigned.
 		/// </summary>
-		public Color LineColor 
+		public bool DoNotOverwriteTemplateMaterialProperties
+		{
+			get { return m_doNotOverwriteTemplateMaterialProperties; }
+			set { m_doNotOverwriteTemplateMaterialProperties = value; }
+		}
+
+		/// <summary>
+		/// Get or set the line color of this volumetric line's material
+		/// </summary>
+		public Color LineColor
 		{
 			get { return m_lineColor; }
 			set
-            {
-                m_lineColor = value;
-                GetComponent<Renderer>().sharedMaterial.color = m_lineColor;
-            }
+			{
+				CreateMaterial();
+				if (null != m_material)
+				{
+					m_lineColor = value;
+					m_material.color = m_lineColor;
+				}
+			}
 		}
-		
+
 		/// <summary>
-		/// Gets or sets the width of the line. This can be used during runtime
-		/// regardless of SetLineColorAtStart-propertie's value.
+		/// Get or set the line width of this volumetric line's material
 		/// </summary>
-		public float LineWidth 
+		public float LineWidth
 		{
 			get { return m_lineWidth; }
 			set
-            {
-                m_lineWidth = value;
-                GetComponent<Renderer>().sharedMaterial.SetFloat("_LineWidth", m_lineWidth);
-            }
+			{
+				CreateMaterial();
+				if (null != m_material)
+				{
+					m_lineWidth = value;
+					m_material.SetFloat("_LineWidth", m_lineWidth);
+				}
+			}
 		}
-		#endregion
+
+		/// <summary>
+		/// Get or set the light saber factor of this volumetric line's material
+		/// </summary>
+		public float LightSaberFactor
+		{
+			get { return m_lightSaberFactor; }
+			set
+			{
+				CreateMaterial();
+				if (null != m_material)
+				{
+					m_lightSaberFactor = value;
+					m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
+				}
+			}
+		}
 
 		/// <summary>
 		/// Gets the vertices of this line strip
@@ -107,24 +163,58 @@ namespace VolumetricLines
 		{
 			get { return m_lineVertices; }
 		}
+		#endregion
 
-		#region Unity callbacks and public methods
-		void Start () 
+		#region methods
+		/// <summary>
+		/// Creates a copy of the template material for this instance
+		/// </summary>
+		private void CreateMaterial()
+		{
+			if (null != m_templateMaterial && null == m_material)
+			{
+				m_material = Material.Instantiate(m_templateMaterial);
+				GetComponent<MeshRenderer>().sharedMaterial = m_material;
+				SetAllMaterialProperties();
+			}
+		}
+
+		/// <summary>
+		/// Destroys the copy of the template material which was used for this instance
+		/// </summary>
+		private void DestroyMaterial()
+		{
+			if (null != m_material)
+			{
+				DestroyImmediate(m_material);
+				m_material = null;
+			}
+		}
+
+		/// <summary>
+		/// Sets all material properties (color, width, start-, endpos)
+		/// </summary>
+		private void SetAllMaterialProperties()
 		{
 			UpdateLineVertices(m_lineVertices);
-			// Need to duplicate the material, otherwise multiple volume lines would interfere
-			GetComponent<Renderer>().material = GetComponent<Renderer>().sharedMaterial;
-			if (m_setLineColorAtStart)
+
+			if (null != m_material)
 			{
-				GetComponent<Renderer>().sharedMaterial.color = m_lineColor;
-				GetComponent<Renderer>().sharedMaterial.SetFloat("_LineWidth", m_lineWidth);
+				if (!m_doNotOverwriteTemplateMaterialProperties)
+				{
+					m_material.color = m_lineColor;
+					m_material.SetFloat("_LineWidth", m_lineWidth);
+					m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
+				}
+				else
+				{
+					m_lineColor = m_material.color;
+					m_lineWidth = m_material.GetFloat("_LineWidth");
+					m_lightSaberFactor = m_material.GetFloat("_LightSaberFactor");
+				}
+
+				m_material.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
 			}
-			else 
-			{
-				m_lineColor = GetComponent<Renderer>().sharedMaterial.color;
-				m_lineWidth = GetComponent<Renderer>().sharedMaterial.GetFloat("_LineWidth");
-			}
-			GetComponent<Renderer>().sharedMaterial.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
 		}
 
 		/// <summary>
@@ -134,6 +224,11 @@ namespace VolumetricLines
 		/// <param name="m_newSetOfVertices">M_new set of vertices.</param>
 		public void UpdateLineVertices(Vector3[] m_newSetOfVertices)
 		{
+			if (null == m_newSetOfVertices)
+			{
+				return;
+			}
+
 			if (m_newSetOfVertices.Length < 3)
 			{
 				Debug.LogError("Add at least 3 vertices to the VolumetricLineStrip");
@@ -141,7 +236,7 @@ namespace VolumetricLines
 			}
 
 			m_lineVertices = m_newSetOfVertices;
-			
+
 			// fill vertex positions, and indices
 			// 2 for each position, + 2 for the start, + 2 for the end
 			Vector3[] vertexPositions = new Vector3[m_lineVertices.Length * 2 + 4];
@@ -151,7 +246,7 @@ namespace VolumetricLines
 			int x = 0;
 			vertexPositions[v++] = m_lineVertices[0];
 			vertexPositions[v++] = m_lineVertices[0];
-			for (int i=0; i < m_lineVertices.Length; ++i)
+			for (int i = 0; i < m_lineVertices.Length; ++i)
 			{
 				vertexPositions[v++] = m_lineVertices[i];
 				vertexPositions[v++] = m_lineVertices[i];
@@ -170,45 +265,45 @@ namespace VolumetricLines
 			indices[x++] = v - 1;
 			indices[x++] = v - 2;
 			indices[x++] = v - 3;
-			
+
 			// fill texture coordinates and vertex offsets
-			Vector2[] texCoords		  = new Vector2[vertexPositions.Length];
-			Vector2[] vertexOffsets	  = new Vector2[vertexPositions.Length];
+			Vector2[] texCoords = new Vector2[vertexPositions.Length];
+			Vector2[] vertexOffsets = new Vector2[vertexPositions.Length];
 			int t = 0;
 			int o = 0;
 			texCoords[t++] = new Vector2(1.0f, 0.0f);
 			texCoords[t++] = new Vector2(1.0f, 1.0f);
 			texCoords[t++] = new Vector2(0.5f, 0.0f);
 			texCoords[t++] = new Vector2(0.5f, 1.0f);
-			vertexOffsets[o++] = new Vector2(1.0f,	-1.0f);
-			vertexOffsets[o++] = new Vector2(1.0f,	 1.0f);
-			vertexOffsets[o++] = new Vector2(0.0f,	-1.0f);
-			vertexOffsets[o++] = new Vector2(0.0f,	 1.0f);
-			for (int i=1; i < m_lineVertices.Length - 1; ++i)
+			vertexOffsets[o++] = new Vector2(1.0f, -1.0f);
+			vertexOffsets[o++] = new Vector2(1.0f, 1.0f);
+			vertexOffsets[o++] = new Vector2(0.0f, -1.0f);
+			vertexOffsets[o++] = new Vector2(0.0f, 1.0f);
+			for (int i = 1; i < m_lineVertices.Length - 1; ++i)
 			{
 				if ((i & 0x1) == 0x1)
 				{
 					texCoords[t++] = new Vector2(0.5f, 0.0f);
 					texCoords[t++] = new Vector2(0.5f, 1.0f);
 				}
-				else 
+				else
 				{
 					texCoords[t++] = new Vector2(0.5f, 0.0f);
 					texCoords[t++] = new Vector2(0.5f, 1.0f);
 				}
-				vertexOffsets[o++] = new Vector2(0.0f,	 1.0f);
-				vertexOffsets[o++] = new Vector2(0.0f,	-1.0f);
+				vertexOffsets[o++] = new Vector2(0.0f, 1.0f);
+				vertexOffsets[o++] = new Vector2(0.0f, -1.0f);
 			}
 			texCoords[t++] = new Vector2(0.5f, 0.0f);
 			texCoords[t++] = new Vector2(0.5f, 1.0f);
 			texCoords[t++] = new Vector2(0.0f, 0.0f);
 			texCoords[t++] = new Vector2(0.0f, 1.0f);
-			vertexOffsets[o++] = new Vector2(0.0f,	 1.0f);
-			vertexOffsets[o++] = new Vector2(0.0f,	-1.0f);
-			vertexOffsets[o++] = new Vector2(1.0f,	 1.0f);
-			vertexOffsets[o++] = new Vector2(1.0f,	-1.0f);
-			
-			
+			vertexOffsets[o++] = new Vector2(0.0f, 1.0f);
+			vertexOffsets[o++] = new Vector2(0.0f, -1.0f);
+			vertexOffsets[o++] = new Vector2(1.0f, 1.0f);
+			vertexOffsets[o++] = new Vector2(1.0f, -1.0f);
+
+
 			// fill previous and next positions
 			Vector3[] prevPositions = new Vector3[vertexPositions.Length];
 			Vector4[] nextPositions = new Vector4[vertexPositions.Length];
@@ -222,12 +317,12 @@ namespace VolumetricLines
 			nextPositions[n++] = m_lineVertices[1];
 			nextPositions[n++] = m_lineVertices[1];
 			nextPositions[n++] = m_lineVertices[1];
-			for (int i=1; i < m_lineVertices.Length - 1; ++i)
+			for (int i = 1; i < m_lineVertices.Length - 1; ++i)
 			{
-				prevPositions[p++] = m_lineVertices[i-1];
-				prevPositions[p++] = m_lineVertices[i-1];
-				nextPositions[n++] = m_lineVertices[i+1];
-				nextPositions[n++] = m_lineVertices[i+1];
+				prevPositions[p++] = m_lineVertices[i - 1];
+				prevPositions[p++] = m_lineVertices[i - 1];
+				nextPositions[n++] = m_lineVertices[i + 1];
+				nextPositions[n++] = m_lineVertices[i + 1];
 			}
 			prevPositions[p++] = m_lineVertices[m_lineVertices.Length - 2];
 			prevPositions[p++] = m_lineVertices[m_lineVertices.Length - 2];
@@ -237,7 +332,7 @@ namespace VolumetricLines
 			nextPositions[n++] = m_lineVertices[m_lineVertices.Length - 2];
 			nextPositions[n++] = m_lineVertices[m_lineVertices.Length - 2];
 			nextPositions[n++] = m_lineVertices[m_lineVertices.Length - 2];
-			
+
 			// Need to set vertices before assigning new Mesh to the MeshFilter's mesh property
 			Mesh mesh = new Mesh();
 			mesh.vertices = vertexPositions;
@@ -246,18 +341,39 @@ namespace VolumetricLines
 			mesh.uv = texCoords;
 			mesh.uv2 = vertexOffsets;
 			mesh.SetIndices(indices, MeshTopology.Triangles, 0);
-            mesh.RecalculateBounds();
+			mesh.RecalculateBounds();
 			GetComponent<MeshFilter>().mesh = mesh;
+		}
+		#endregion
+
+		#region event functions
+		void Start () 
+		{
+			UpdateLineVertices(m_lineVertices);
+			CreateMaterial();
+		}
+
+		void OnDestroy()
+		{
+			DestroyMaterial();
 		}
 
 		void Update()
 		{
-			if (transform.hasChanged)
+			if (transform.hasChanged && null != m_material)
 			{
-				GetComponent<Renderer>().sharedMaterial.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
+				m_material.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
 			}
 		}
-        
+
+		void OnValidate()
+		{
+			// This function is called when the script is loaded or a value is changed in the inspector (Called in the editor only).
+			//  => make sure, everything stays up-to-date
+			CreateMaterial();
+			SetAllMaterialProperties();
+		}
+
 		void OnDrawGizmos()
 		{
 			Gizmos.color = Color.green;

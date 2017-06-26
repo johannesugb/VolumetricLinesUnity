@@ -23,15 +23,17 @@ public class CreateSinShapedLineStrip : MonoBehaviour
 		// Add the MeshFilter component, VolumetricLineStripBehavior requires it
 		go.AddComponent<MeshFilter>();
 
-		// Add a MeshRenderer, VolumetricLineStripBehavior requires it, and set the material
+		// Add a MeshRenderer, VolumetricLineStripBehavior requires it
 		var meshRenderer = go.AddComponent<MeshRenderer>();
-		meshRenderer.material = m_volumetricLineStripMaterial;
 
 		// Add the VolumetricLineStripBehavior and set parameters, like color and all the vertices of the line
 		var volLineStrip = go.AddComponent<VolumetricLineStripBehavior>();
-		volLineStrip.SetLineColorAtStart = true;
+		volLineStrip.DoNotOverwriteTemplateMaterialProperties = false;
+		volLineStrip.TemplateMaterial = m_volumetricLineStripMaterial;
 		volLineStrip.LineColor = m_color;
 		volLineStrip.LineWidth = 55.0f;
+		volLineStrip.LightSaberFactor = 0.83f;
+
 		var lineVertices = new Vector3[m_numVertices];
 		for (int i=0; i < m_numVertices; ++i)
 		{
@@ -41,6 +43,7 @@ public class CreateSinShapedLineStrip : MonoBehaviour
 		}
 
 		volLineStrip.UpdateLineVertices(lineVertices);
+
 	}
 
 	

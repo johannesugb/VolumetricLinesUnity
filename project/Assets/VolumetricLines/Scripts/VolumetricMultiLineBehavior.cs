@@ -79,8 +79,7 @@ namespace VolumetricLines
 				}
 			}
 		}
-
-
+		
 		void Start () 
 		{
 			m_volumetricLines = new VolumetricLineBehavior[m_lineVertices.Length - 1];

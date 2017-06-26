@@ -88,6 +88,30 @@ namespace VolumetricLines
 
 		#region properties
 		/// <summary>
+		/// Gets or sets the tmplate material.
+		/// Setting this will only have an impact once. 
+		/// Subsequent changes will be ignored.
+		/// </summary>
+		public Material TemplateMaterial
+		{
+			get { return m_templateMaterial; }
+			set { m_templateMaterial = value; }
+		}
+
+		/// <summary>
+		/// Gets or sets whether or not the template material properties
+		/// should be used (false) or if the properties of this MonoBehavior
+		/// instance should be used (true, default).
+		/// Setting this will only have an impact once, and then only if it
+		/// is set before TemplateMaterial has been assigned.
+		/// </summary>
+		public bool DoNotOverwriteTemplateMaterialProperties
+		{
+			get { return m_doNotOverwriteTemplateMaterialProperties; }
+			set { m_doNotOverwriteTemplateMaterialProperties = value; }
+		}
+		
+		/// <summary>
 		/// Get or set the line color of this volumetric line's material
 		/// </summary>
 		public Color LineColor
@@ -95,8 +119,12 @@ namespace VolumetricLines
 			get { return m_lineColor;  }
 			set
 			{
-				m_lineColor = value;
-				m_material.color = m_lineColor;
+				CreateMaterial();
+				if (null != m_material)
+				{
+					m_lineColor = value;
+					m_material.color = m_lineColor;
+				}
 			}
 		}
 
@@ -108,8 +136,12 @@ namespace VolumetricLines
 			get { return m_lineWidth; }
 			set
 			{
-				m_lineWidth = value;
-				m_material.SetFloat("_LineWidth", m_lineWidth);
+				CreateMaterial();
+				if (null != m_material)
+				{
+					m_lineWidth = value;
+					m_material.SetFloat("_LineWidth", m_lineWidth);
+				}
 			}
 		}
 
@@ -121,8 +153,12 @@ namespace VolumetricLines
 			get { return m_lightSaberFactor; }
 			set
 			{
-				m_lightSaberFactor = value;
-				m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
+				CreateMaterial();
+				if (null != m_material)
+				{
+					m_lightSaberFactor = value;
+					m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
+				}
 			}
 		}
 
