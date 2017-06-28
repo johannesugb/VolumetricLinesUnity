@@ -24,7 +24,7 @@ public class CreateSinShapedLineStrip : MonoBehaviour
 		go.AddComponent<MeshFilter>();
 
 		// Add a MeshRenderer, VolumetricLineStripBehavior requires it
-		var meshRenderer = go.AddComponent<MeshRenderer>();
+		go.AddComponent<MeshRenderer>();
 
 		// Add the VolumetricLineStripBehavior and set parameters, like color and all the vertices of the line
 		var volLineStrip = go.AddComponent<VolumetricLineStripBehavior>();

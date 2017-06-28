@@ -217,7 +217,7 @@ namespace VolumetricLines
 		}
 
 		/// <summary>
-		/// Sets all material properties (color, width, start-, endpos)
+		/// Sets all material properties (color, width, light saber factor, start-, endpos)
 		/// </summary>
 		private void SetAllMaterialProperties()
 		{
