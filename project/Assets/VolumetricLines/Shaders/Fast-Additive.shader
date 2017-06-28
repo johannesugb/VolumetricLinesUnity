@@ -47,7 +47,7 @@ Shader "VolumetricLine/Fast-Additive" {
 				#pragma glsl_no_auto_normalization
 				#pragma vertex vert
 				#pragma fragment frag
-				#pragma multi_compile FOV_SCALING_OFF FOV_SCALING_ON
+				#pragma multi_compile __ FOV_SCALING_OFF
 				
 				// tell the cginc file that this is a simplified version of the shader:
 				#define VOL_LINE_SHDMODE_FAST
