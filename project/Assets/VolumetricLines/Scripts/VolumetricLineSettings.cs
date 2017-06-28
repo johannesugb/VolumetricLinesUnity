@@ -23,10 +23,12 @@ public class VolumetricLineSettings : MonoBehaviour
 	{
 		if (m_disableFieldOfViewScaling)
 		{
+			Debug.Log("Shader.EnableKeyword(FOV_SCALING_OFF);");
 			Shader.EnableKeyword("FOV_SCALING_OFF");
 		}	
 		else
 		{
+			Debug.Log("Shader.DisableKeyword(FOV_SCALING_OFF);");
 			Shader.DisableKeyword("FOV_SCALING_OFF");
 		}
 	}

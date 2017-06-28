@@ -231,12 +231,6 @@ namespace VolumetricLines
 					m_material.SetFloat("_LineWidth", m_lineWidth);
 					m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
 				}
-				else
-				{
-					m_lineColor = m_material.color;
-					m_lineWidth = m_material.GetFloat("_LineWidth");
-					m_lightSaberFactor = m_material.GetFloat("_LightSaberFactor");
-				}
 
 				m_material.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
 			}

@@ -3,7 +3,6 @@
 	
 	#include "UnityCG.cginc"
 	
-	// half4 _MainTex_ST;
 	float _LineWidth;
 	float _LineScale;
 	
@@ -39,7 +38,7 @@
 
 #ifndef FOV_SCALING_OFF
 		float t = unity_CameraProjection._m11;
-		float fov = atan(1.0f / t) * 360.0 / UNITY_PI; // = 2 * 180 / UNITY_PI = 2 * rad2deg
+		float fov = atan(1.0f / t) * 114.59155902616464175359630962821; // = 2 * 180 / UNITY_PI = 2 * rad2deg
 		scaledLineWidth = scaledLineWidth * 60.0 / fov;
 #endif
 		
