@@ -5,7 +5,6 @@
 	
 	float _LineWidth;
 	float _LineScale;
-	float _CAMERA_FOV = 60.0f;
 	
 	struct a2v
 	{
