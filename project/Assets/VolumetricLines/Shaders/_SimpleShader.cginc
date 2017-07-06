@@ -25,8 +25,13 @@
 		v2f o;
 		o.uv = v.texcoord;
 		
+#if UNITY_VERSION >= 540
 		float4 clipPos = UnityObjectToClipPos(v.vertex);
 		float4 clipPos_other = UnityObjectToClipPos(float4(v.otherPos, 1.0));
+#else
+		float4 clipPos = mul(UNITY_MATRIX_MVP, v.vertex);
+		float4 clipPos_other = mul(UNITY_MATRIX_MVP, float4(v.otherPos, 1.0));
+#endif
 
 		float aspectRatio = _ScreenParams.x / _ScreenParams.y;
 		float invAspectRatio = _ScreenParams.y / _ScreenParams.x;

@@ -26,7 +26,7 @@ namespace VolumetricLines
     /// 
 	/// </summary>
 	[RequireComponent(typeof(MeshFilter))]
-	[RequireComponent(typeof(Renderer))]
+	[RequireComponent(typeof(MeshRenderer))]
     [ExecuteInEditMode]
 	public class VolumetricLineStripBehavior : MonoBehaviour 
 	{
@@ -371,6 +371,10 @@ namespace VolumetricLines
 		void OnDrawGizmos()
 		{
 			Gizmos.color = Color.green;
+			if (null == m_lineVertices)
+			{
+				return;
+			}
 			for (int i=0; i < m_lineVertices.Length - 1; ++i)
 			{
 				Gizmos.DrawLine(gameObject.transform.TransformPoint(m_lineVertices[i]), gameObject.transform.TransformPoint(m_lineVertices[i+1]));
