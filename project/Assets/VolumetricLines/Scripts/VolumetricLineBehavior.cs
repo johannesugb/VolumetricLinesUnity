@@ -266,6 +266,7 @@ namespace VolumetricLines
 			if (null != m_meshFilter)
 			{
 				var mesh = m_meshFilter.sharedMesh;
+				Debug.Assert(null != mesh);
 				if (null != mesh)
 				{
 					mesh.vertices = vertexPositions;
@@ -316,6 +317,18 @@ namespace VolumetricLines
 
 		void OnDestroy()
 		{
+			if (null != m_meshFilter) 
+			{
+				if (Application.isPlaying) 
+				{
+					Mesh.Destroy(m_meshFilter.sharedMesh);
+				}
+				else // avoid "may not be called from edit mode" error
+				{
+					Mesh.DestroyImmediate(m_meshFilter.sharedMesh);
+				}
+				m_meshFilter.sharedMesh = null;
+			}
 			DestroyMaterial();
 		}
 		

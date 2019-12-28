@@ -327,28 +327,50 @@ namespace VolumetricLines
 			nextPositions[n++] = m_lineVertices[m_lineVertices.Length - 2];
 			nextPositions[n++] = m_lineVertices[m_lineVertices.Length - 2];
 
-			// Need to set vertices before assigning new Mesh to the MeshFilter's mesh property
-			Mesh mesh = new Mesh();
-			mesh.vertices = vertexPositions;
-			mesh.normals = prevPositions;
-			mesh.tangents = nextPositions;
-			mesh.uv = texCoords;
-			mesh.uv2 = vertexOffsets;
-			mesh.SetIndices(indices, MeshTopology.Triangles, 0);
-			mesh.RecalculateBounds();
-			GetComponent<MeshFilter>().mesh = mesh;
+			if (null != m_meshFilter)
+			{
+				var mesh = m_meshFilter.sharedMesh;
+				Debug.Assert(null != mesh);
+				if (null != mesh)
+				{
+					mesh.vertices = vertexPositions;
+					mesh.normals = prevPositions;
+					mesh.tangents = nextPositions;
+					mesh.uv = texCoords;
+					mesh.uv2 = vertexOffsets;
+					mesh.SetIndices(indices, MeshTopology.Triangles, 0);
+					mesh.RecalculateBounds();
+				}
+			}
+		
+
 		}
 		#endregion
 
 		#region event functions
 		void Start () 
 		{
+			Mesh mesh = new Mesh();
+			m_meshFilter = GetComponent<MeshFilter>();
+			m_meshFilter.mesh = mesh;
 			UpdateLineVertices(m_lineVertices);
 			CreateMaterial();
 		}
 
 		void OnDestroy()
 		{
+			if (null != m_meshFilter) 
+			{
+				if (Application.isPlaying) 
+				{
+					Mesh.Destroy(m_meshFilter.sharedMesh);
+				}
+				else // avoid "may not be called from edit mode" error
+				{
+					Mesh.DestroyImmediate(m_meshFilter.sharedMesh);
+				}
+				m_meshFilter.sharedMesh = null;
+			}
 			DestroyMaterial();
 		}
 
