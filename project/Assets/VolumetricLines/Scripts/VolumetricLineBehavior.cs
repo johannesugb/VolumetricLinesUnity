@@ -196,11 +196,18 @@ namespace VolumetricLines
 		/// </summary>
 		private void CreateMaterial()
 		{
-			if (null != m_templateMaterial && null == m_material)
+			if (null == m_material)
 			{
-				m_material = Material.Instantiate(m_templateMaterial);
-				GetComponent<MeshRenderer>().sharedMaterial = m_material;
-				SetAllMaterialProperties();
+				if (null != m_templateMaterial)
+				{
+					m_material = Material.Instantiate(m_templateMaterial);
+					GetComponent<MeshRenderer>().sharedMaterial = m_material;
+					SetAllMaterialProperties();
+				}
+				else 
+				{
+					m_material = GetComponent<MeshRenderer>().sharedMaterial;
+				}
 			}
 		}
 
