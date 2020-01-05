@@ -223,7 +223,7 @@ namespace VolumetricLines
 		/// Updates the vertices of this VolumetricLineStrip.
 		/// This is an expensive operation.
 		/// </summary>
-		/// <param name="m_newSetOfVertices">M_new set of vertices.</param>
+		/// <param name="m_newSetOfVertices">New set of vertices for the line strip.</param>
 		public void UpdateLineVertices(Vector3[] m_newSetOfVertices)
 		{
 			if (null == m_newSetOfVertices)

@@ -249,26 +249,29 @@ namespace VolumetricLines
 		/// </summary>
 		public void SetStartAndEndPoints(Vector3 startPoint, Vector3 endPoint)
 		{
+			m_startPos = startPoint;
+			m_endPos = endPoint;
+
 			Vector3[] vertexPositions = {
-				startPoint,
-				startPoint,
-				startPoint,
-				startPoint,
-				endPoint,
-				endPoint,
-				endPoint,
-				endPoint,
+				m_startPos,
+				m_startPos,
+				m_startPos,
+				m_startPos,
+				m_endPos,
+				m_endPos,
+				m_endPos,
+				m_endPos,
 			};
 			
 			Vector3[] other = {
-				endPoint,
-				endPoint,
-				endPoint,
-				endPoint,
-				startPoint,
-				startPoint,
-				startPoint,
-				startPoint,
+				m_endPos,
+				m_endPos,
+				m_endPos,
+				m_endPos,
+				m_startPos,
+				m_startPos,
+				m_startPos,
+				m_startPos,
 			};
 
 			if (null != m_meshFilter)
@@ -288,39 +291,16 @@ namespace VolumetricLines
 		#region event functions
 		void Start () 
 		{
-			Vector3[] vertexPositions = {
-				m_startPos,
-				m_startPos,
-				m_startPos,
-				m_startPos,
-				m_endPos,
-				m_endPos,
-				m_endPos,
-				m_endPos,
-			};
-			
-			Vector3[] other = {
-				m_endPos,
-				m_endPos,
-				m_endPos,
-				m_endPos,
-				m_startPos,
-				m_startPos,
-				m_startPos,
-				m_startPos,
-			};
-			
-			// Need to set vertices before assigning new Mesh to the MeshFilter's mesh property
 			Mesh mesh = new Mesh();
-			mesh.vertices = vertexPositions;
-			mesh.normals = other;
+			m_meshFilter = GetComponent<MeshFilter>();
+			m_meshFilter.mesh = mesh;
+			SetStartAndEndPoints(m_startPos, m_endPos);
 			mesh.uv = VolumetricLineVertexData.TexCoords;
 			mesh.uv2 = VolumetricLineVertexData.VertexOffsets;
 			mesh.SetIndices(VolumetricLineVertexData.Indices, MeshTopology.Triangles, 0);
             mesh.RecalculateBounds();
-			m_meshFilter = GetComponent<MeshFilter>();
-			m_meshFilter.mesh = mesh;
 			CreateMaterial();
+			// TODO: Need to set vertices before assigning new Mesh to the MeshFilter's mesh property => Why?
 		}
 
 		void OnDestroy()
