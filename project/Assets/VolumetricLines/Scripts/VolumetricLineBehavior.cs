@@ -202,12 +202,12 @@ namespace VolumetricLines
 				{
 					m_material = Material.Instantiate(m_templateMaterial);
 					GetComponent<MeshRenderer>().sharedMaterial = m_material;
-					SetAllMaterialProperties();
 				}
 				else 
 				{
 					m_material = GetComponent<MeshRenderer>().sharedMaterial;
 				}
+				SetAllMaterialProperties();
 			}
 		}
 
