@@ -1,6 +1,4 @@
 using UnityEngine;
-using System.Collections;
-using VolumetricLines.Utils;
 
 namespace VolumetricLines
 {
@@ -30,6 +28,9 @@ namespace VolumetricLines
 	[ExecuteInEditMode]
 	public class VolumetricLineBehavior : MonoBehaviour 
 	{
+		// Used to compute the average value of all the Vector3's components:
+		static readonly Vector3 Average = new Vector3(1f/3f, 1f/3f, 1f/3f);
+
 		#region private variables
 		/// <summary>
 		/// Template material to be used
@@ -202,12 +203,12 @@ namespace VolumetricLines
 				{
 					m_material = Material.Instantiate(m_templateMaterial);
 					GetComponent<MeshRenderer>().sharedMaterial = m_material;
+					SetAllMaterialProperties();
 				}
 				else 
 				{
 					m_material = GetComponent<MeshRenderer>().sharedMaterial;
 				}
-				SetAllMaterialProperties();
 			}
 		}
 
@@ -239,7 +240,7 @@ namespace VolumetricLines
 					m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
 				}
 
-				m_material.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
+				m_material.SetFloat("_LineScale", Vector3.Dot(transform.lossyScale, Average));
 			}
 		}
 
@@ -343,7 +344,7 @@ namespace VolumetricLines
 		{
 			if (transform.hasChanged && null != m_material)
 			{
-				m_material.SetFloat("_LineScale", transform.GetGlobalUniformScaleForLineWidth());
+				m_material.SetFloat("_LineScale", Vector3.Dot(transform.lossyScale, Average));
 			}
 		}
 
