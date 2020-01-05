@@ -270,7 +270,6 @@ namespace VolumetricLines
 		private Bounds CalculateBounds()
 		{
 			var maxWidth = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
-			Debug.Log(string.Format("{0} => {1}", gameObject.name, maxWidth));
 			var scaledLineWidth = maxWidth * LineWidth * 0.5f;
 
 			var min = new Vector3(

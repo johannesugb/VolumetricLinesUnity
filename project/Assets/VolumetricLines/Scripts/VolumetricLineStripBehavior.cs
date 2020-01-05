@@ -137,6 +137,7 @@ namespace VolumetricLines
 					m_lineWidth = value;
 					m_material.SetFloat("_LineWidth", m_lineWidth);
 				}
+				UpdateBounds();
 			}
 		}
 
@@ -200,6 +201,25 @@ namespace VolumetricLines
 		}
 
 		/// <summary>
+		/// Calculates the (approximated) _LineScale factor based on the object's scale.
+		/// </summary>
+		private float CalculateLineScale()
+		{
+			return Vector3.Dot(transform.lossyScale, Average);
+		}
+
+		/// <summary>
+		/// Updates the line scaling of this volumetric line based on the current object scaling.
+		/// </summary>
+		public void UpdateLineScale()
+		{
+			if (null != m_material) 
+			{
+				m_material.SetFloat("_LineScale", CalculateLineScale());
+			}
+		}
+
+		/// <summary>
 		/// Sets all material properties (color, width, start-, endpos)
 		/// </summary>
 		private void SetAllMaterialProperties()
@@ -214,8 +234,64 @@ namespace VolumetricLines
 					m_material.SetFloat("_LineWidth", m_lineWidth);
 					m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
 				}
+				UpdateLineScale();
+			}
+		}
 
-				m_material.SetFloat("_LineScale", Vector3.Dot(transform.lossyScale, Average));
+
+		/// <summary>
+		/// Calculate the bounds of this line based on the coordinates of the line vertices,
+		/// the line width, and the scaling of the object.
+		/// </summary>
+		private Bounds CalculateBounds()
+		{
+			var maxWidth = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
+			var scaledLineWidth = maxWidth * LineWidth * 0.5f;
+			var scaledLineWidthVec = new Vector3(scaledLineWidth, scaledLineWidth, scaledLineWidth);
+
+			Debug.Assert(m_lineVertices.Length > 0);
+			if (m_lineVertices.Length == 0)
+			{
+				return new Bounds();
+			}
+
+			var min = m_lineVertices[0];
+			var max = m_lineVertices[0];
+			for (int i = 1; i < m_lineVertices.Length; ++i)
+			{
+				min = new Vector3(
+					Mathf.Min(min.x, m_lineVertices[i].x),
+					Mathf.Min(min.y, m_lineVertices[i].y),
+					Mathf.Min(min.z, m_lineVertices[i].z)
+				);
+				max = new Vector3(
+					Mathf.Max(max.x, m_lineVertices[i].x),
+					Mathf.Max(max.y, m_lineVertices[i].y),
+					Mathf.Max(max.z, m_lineVertices[i].z)
+				);
+			}
+
+			return new Bounds
+			{
+				min = min - scaledLineWidthVec,
+				max = max + scaledLineWidthVec
+			};
+		}
+
+		/// <summary>
+		/// Updates the bounds of this line according to the current properties, 
+		/// which there are: coordinates of the line vertices, line width, scaling of the object.
+		/// </summary>
+		public void UpdateBounds()
+		{
+			if (null != m_meshFilter)
+			{
+				var mesh = m_meshFilter.sharedMesh;
+				Debug.Assert(null != mesh);
+				if (null != mesh)
+				{
+					mesh.bounds = CalculateBounds();
+				}
 			}
 		}
 
@@ -223,21 +299,21 @@ namespace VolumetricLines
 		/// Updates the vertices of this VolumetricLineStrip.
 		/// This is an expensive operation.
 		/// </summary>
-		/// <param name="m_newSetOfVertices">New set of vertices for the line strip.</param>
-		public void UpdateLineVertices(Vector3[] m_newSetOfVertices)
+		/// <param name="newSetOfVertices">new set of vertices for the line strip.</param>
+		public void UpdateLineVertices(Vector3[] newSetOfVertices)
 		{
-			if (null == m_newSetOfVertices)
+			if (null == newSetOfVertices)
 			{
 				return;
 			}
 
-			if (m_newSetOfVertices.Length < 3)
+			if (newSetOfVertices.Length < 3)
 			{
 				Debug.LogError("Add at least 3 vertices to the VolumetricLineStrip");
 				return;
 			}
 
-			m_lineVertices = m_newSetOfVertices;
+			m_lineVertices = newSetOfVertices;
 
 			// fill vertex positions, and indices
 			// 2 for each position, + 2 for the start, + 2 for the end
@@ -347,7 +423,7 @@ namespace VolumetricLines
 					mesh.uv = texCoords;
 					mesh.uv2 = vertexOffsets;
 					mesh.SetIndices(indices, MeshTopology.Triangles, 0);
-					mesh.RecalculateBounds();
+					UpdateBounds();
 				}
 			}
 		
@@ -384,9 +460,10 @@ namespace VolumetricLines
 
 		void Update()
 		{
-			if (transform.hasChanged && null != m_material)
+			if (transform.hasChanged)
 			{
-				m_material.SetFloat("_LineScale", Vector3.Dot(transform.lossyScale, Average));
+				UpdateLineScale();
+				UpdateBounds();
 			}
 		}
 
@@ -396,6 +473,7 @@ namespace VolumetricLines
 			//  => make sure, everything stays up-to-date
 			CreateMaterial();
 			SetAllMaterialProperties();
+			UpdateBounds();
 		}
 
 		void OnDrawGizmos()
