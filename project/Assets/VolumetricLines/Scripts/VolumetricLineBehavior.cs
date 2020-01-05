@@ -143,6 +143,7 @@ namespace VolumetricLines
 					m_lineWidth = value;
 					m_material.SetFloat("_LineWidth", m_lineWidth);
 				}
+				UpdateBounds();
 			}
 		}
 
@@ -225,6 +226,25 @@ namespace VolumetricLines
 		}
 
 		/// <summary>
+		/// Calculates the (approximated) _LineScale factor based on the object's scale.
+		/// </summary>
+		private float CalculateLineScale()
+		{
+			return Vector3.Dot(transform.lossyScale, Average);
+		}
+
+		/// <summary>
+		/// Updates the line scaling of this volumetric line based on the current object scaling.
+		/// </summary>
+		public void UpdateLineScale()
+		{
+			if (null != m_material) 
+			{
+				m_material.SetFloat("_LineScale", CalculateLineScale());
+			}
+		}
+
+		/// <summary>
 		/// Sets all material properties (color, width, light saber factor, start-, endpos)
 		/// </summary>
 		private void SetAllMaterialProperties()
@@ -239,8 +259,52 @@ namespace VolumetricLines
 					m_material.SetFloat("_LineWidth", m_lineWidth);
 					m_material.SetFloat("_LightSaberFactor", m_lightSaberFactor);
 				}
+				UpdateLineScale();
+			}
+		}
 
-				m_material.SetFloat("_LineScale", Vector3.Dot(transform.lossyScale, Average));
+		/// <summary>
+		/// Calculate the bounds of this line based on start and end points,
+		/// the line width, and the scaling of the object.
+		/// </summary>
+		private Bounds CalculateBounds()
+		{
+			var maxWidth = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
+			Debug.Log(string.Format("{0} => {1}", gameObject.name, maxWidth));
+			var scaledLineWidth = maxWidth * LineWidth * 0.5f;
+
+			var min = new Vector3(
+				Mathf.Min(m_startPos.x, m_endPos.x) - scaledLineWidth,
+				Mathf.Min(m_startPos.y, m_endPos.y) - scaledLineWidth,
+				Mathf.Min(m_startPos.z, m_endPos.z) - scaledLineWidth
+			);
+			var max = new Vector3(
+				Mathf.Max(m_startPos.x, m_endPos.x) + scaledLineWidth,
+				Mathf.Max(m_startPos.y, m_endPos.y) + scaledLineWidth,
+				Mathf.Max(m_startPos.z, m_endPos.z) + scaledLineWidth
+			);
+			
+			return new Bounds
+			{
+				min = min,
+				max = max
+			};
+		}
+
+		/// <summary>
+		/// Updates the bounds of this line according to the current properties, 
+		/// which there are: start point, end point, line width, scaling of the object.
+		/// </summary>
+		public void UpdateBounds()
+		{
+			if (null != m_meshFilter)
+			{
+				var mesh = m_meshFilter.sharedMesh;
+				Debug.Assert(null != mesh);
+				if (null != mesh)
+				{
+					mesh.bounds = CalculateBounds();
+				}
 			}
 		}
 
@@ -282,7 +346,7 @@ namespace VolumetricLines
 				{
 					mesh.vertices = vertexPositions;
 					mesh.normals = other;
-					mesh.RecalculateBounds();
+					UpdateBounds();
 				}
 			}
 		}
@@ -298,7 +362,6 @@ namespace VolumetricLines
 			mesh.uv = VolumetricLineVertexData.TexCoords;
 			mesh.uv2 = VolumetricLineVertexData.VertexOffsets;
 			mesh.SetIndices(VolumetricLineVertexData.Indices, MeshTopology.Triangles, 0);
-            mesh.RecalculateBounds();
 			CreateMaterial();
 			// TODO: Need to set vertices before assigning new Mesh to the MeshFilter's mesh property => Why?
 		}
@@ -322,9 +385,10 @@ namespace VolumetricLines
 		
 		void Update()
 		{
-			if (transform.hasChanged && null != m_material)
+			if (transform.hasChanged)
 			{
-				m_material.SetFloat("_LineScale", Vector3.Dot(transform.lossyScale, Average));
+				UpdateLineScale();
+				UpdateBounds();
 			}
 		}
 
@@ -334,6 +398,7 @@ namespace VolumetricLines
 			//  => make sure, everything stays up-to-date
 			CreateMaterial();
 			SetAllMaterialProperties();
+			UpdateBounds();
 		}
 	
 		void OnDrawGizmos()
