@@ -1,6 +1,6 @@
 [![paypal](https://www.paypalobjects.com/en_US/AT/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=C9MYXDBT7RB8L&currency_code=EUR&source=url)
 
-# Volumetric Lines - Unity Asset for the Built-In Render Pipeline
+# Volumetric Lines - Unity Asset
 Source of the [Volumetric Lines Asset from Unity's Asset Store](http://u3d.as/br1).
 
 Support the development of this asset by donating via the PayPal link above. Your donations are greatly appreciated and help to improve this asset. Volumetric Lines is available for free on both, the Unity's Asset Store, and here, on GitHub.
