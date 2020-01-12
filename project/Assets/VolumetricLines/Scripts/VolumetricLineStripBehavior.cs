@@ -417,6 +417,7 @@ namespace VolumetricLines
 				Debug.Assert(null != mesh);
 				if (null != mesh)
 				{
+					mesh.SetIndices(null, MeshTopology.Triangles, 0); // Reset before setting again to prevent a unity error message.
 					mesh.vertices = vertexPositions;
 					mesh.normals = prevPositions;
 					mesh.tangents = nextPositions;
