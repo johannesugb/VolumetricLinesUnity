@@ -3,7 +3,7 @@
 # Volumetric Lines - Unity Asset
 Source of the [Volumetric Lines Asset from Unity's Asset Store](http://u3d.as/br1).
 
-Support the development of this asset by donating via the PayPal link above. Your donations are greatly appreciated and help to improve this asset. Volumetric Lines is available for free on both, the Unity's Asset Store, and here, on GitHub.
+Support the development of this asset by donating via the PayPal link above. Your donations are greatly appreciated and help to improve this asset. Volumetric Lines is available for free on both, the Unity's Asset Store and here, on GitHub.
 
 # Description
 Volumetric Lines is a fast, GPU-based volumetric line renderer based on a technique by Sébastien Hillaire. It can be used to render lines with a volumetric appearance by smartly utilizing a texture. Through the use of different textures, different volumetric line effects can be achieved.
