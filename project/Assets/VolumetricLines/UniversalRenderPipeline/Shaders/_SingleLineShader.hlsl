@@ -46,31 +46,32 @@
 		float projScale = unity_CameraProjection._m11 * 0.5;
 		float scaledLineWidth = _LineWidth * _LineScale * projScale;
 
-		float aspectRatio = _ScreenParams.x / _ScreenParams.y;
-		// The line direction in (aspect-ratio corrected) clip space (and scaled by witdh):
 		float2 lineDirProj = normalize(
-			csPos.xy * aspectRatio / csPos.w - // screen-space pos of current end
-			csPos_other.xy * aspectRatio / csPos_other.w // screen-space position of the other end
-		) * sign(csPos.w) * sign(csPos_other.w) * scaledLineWidth;
+			csPos.xy / csPos.w - 				// clip-space pos of current end
+			csPos_other.xy / csPos_other.w 		// clip-space position of the other end
+		)
+		 * scaledLineWidth						// scale the offsets based on the line width
+		 * sign(csPos.w) * sign(csPos_other.w);	// correct the cases when one end points is outside of the frustum
 		
 		// Offset for our current vertex:
 		float2 offset =
 			v.texcoord1.x * lineDirProj +
 			v.texcoord1.y * float2(lineDirProj.y, -lineDirProj.x)
 		;
-
+		
 		// Apply (aspect-ratio corrected) offset
+		float aspectRatio = _ScreenParams.x / _ScreenParams.y;
 		csPos.x += offset.x / aspectRatio;
 		csPos.y += offset.y;
 		o.pos = csPos;
 
 		return o;
-	}
+	}	
 	
 	// Fragment shader
 	float4 frag(v2f i) : SV_Target
 	{
-		float4 tx = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv) * 0;
+		float4 tx = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
 		
 #ifdef LIGHT_SABER_MODE_ON
 		return tx.a > _LightSaberFactor ? float4(1.0, 1.0, 1.0, tx.a) : tx * _Color;
