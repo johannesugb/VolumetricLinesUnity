@@ -427,7 +427,7 @@ namespace VolumetricLines
 					UpdateBounds();
 				}
 			}
-		
+
 
 		}
 		#endregion
