@@ -14,3 +14,6 @@ Example 2: A texture with a filled, solid circle positioned in the center of the
 
 Technically, the algorithm only uses as little as 8 vertices to describe a single line and positions them smartly on the screen to create a volumetric appearance. It also includes an algorithm to render volumetric line strips.
 
+# Support for the Universal Render Pipeline
+
+Support for the Universal Render Pipeline (URP) has been added and is available on the branch [`universal_render_pipeline`](https://github.com/johannesugb/VolumetricLinesUnity/tree/universal_render_pipeline).
