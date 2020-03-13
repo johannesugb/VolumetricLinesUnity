@@ -173,7 +173,7 @@ namespace VolumetricLines
 		/// </summary>
 		private void CreateMaterial()
 		{
-			if (null == m_material)
+			if (null == m_material || null == GetComponent<MeshRenderer>().sharedMaterial)
 			{
 				if (null != m_templateMaterial)
 				{
