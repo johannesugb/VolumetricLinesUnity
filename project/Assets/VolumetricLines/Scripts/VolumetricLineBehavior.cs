@@ -395,6 +395,9 @@ namespace VolumetricLines
 		{
 			// This function is called when the script is loaded or a value is changed in the inspector (Called in the editor only).
 			//  => make sure, everything stays up-to-date
+			if(string.IsNullOrEmpty(gameObject.scene.name) || string.IsNullOrEmpty(gameObject.scene.path)) {
+				return; // ...but not if a Prefab is selected! (Only if we're using it within a scene.)
+			}
 			CreateMaterial();
 			SetAllMaterialProperties();
 			UpdateBounds();
