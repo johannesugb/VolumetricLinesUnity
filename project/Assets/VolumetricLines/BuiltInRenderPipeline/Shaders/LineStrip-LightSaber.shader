@@ -23,6 +23,7 @@ Shader "VolumetricLine/LineStrip-LightSaber" {
 		_LineWidth ("Line Width", Range(0.01, 100)) = 1.0
 		_LineScale ("Line Scale", Float) = 1.0
 		_LightSaberFactor ("LightSaberFactor", Range(0.0, 1.0)) = 0.9
+		[MaterialToggle] _UvBasedLightSaberFactor("UV-Based Light Saber Calculation (Anti-Aliased)", Int) = 0
 		_Color ("Main Color", Color) = (1,1,1,1)
 	}
 	SubShader {

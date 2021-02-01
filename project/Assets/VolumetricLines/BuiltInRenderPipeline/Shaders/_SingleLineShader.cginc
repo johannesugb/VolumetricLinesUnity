@@ -9,6 +9,7 @@
 	float _LineScale;
 #ifdef LIGHT_SABER_MODE_ON
 	fixed _LightSaberFactor;
+	int _UvBasedLightSaberFactor;
 	fixed4 _Color;
 #endif
 
@@ -70,10 +71,20 @@
 	// Fragment shader
 	fixed4 frag(v2f i) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 		fixed4 tx = tex2D(_MainTex, i.uv);
-		
+
 #ifdef LIGHT_SABER_MODE_ON
-		return tx.a > _LightSaberFactor ? float4(1.0, 1.0, 1.0, tx.a) : tx * _Color;
+		if (_UvBasedLightSaberFactor == 1) 
+		{
+			float2 uv2 = i.uv * 2.0 - 1.0;
+			float c = sqrt(uv2[0] * uv2[0] + uv2[1] * uv2[1]);
+			return lerp(tx * _Color, float4(1.0, 1.0, 1.0, tx.a), clamp((1.02 - c - _LightSaberFactor) * 100.0, 0, 1));
+		}
+		else 
+		{
+			return tx.a > _LightSaberFactor ? float4(1.0, 1.0, 1.0, tx.a) : tx * _Color;
+		}
 #else
 		return tx;
 #endif
