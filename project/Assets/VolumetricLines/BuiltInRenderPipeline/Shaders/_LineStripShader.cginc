@@ -87,6 +87,7 @@
 	// Fragment shader
 	fixed4 frag(v2f i) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 		fixed4 tx = tex2D(_MainTex, i.uv);
 		
 #ifdef LIGHT_SABER_MODE_ON
