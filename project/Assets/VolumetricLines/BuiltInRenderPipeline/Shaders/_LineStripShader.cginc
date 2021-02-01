@@ -9,6 +9,7 @@
 	float _LineScale;
 #ifdef LIGHT_SABER_MODE_ON
 	fixed _LightSaberFactor;
+	int _UvBasedLightSaberFactor;
 	fixed4 _Color;
 #endif
 	
@@ -81,58 +82,6 @@
 		o.pos = csPos;
 
 		return o;
-
-		// // Offset for our current vertex:
-		// float2 offset =
-		// 	v.texcoord1.x * lineDirProj +
-		// 	v.texcoord1.y * float2(lineDirProj.y, -lineDirProj.x)
-		// ;
-
-		// // Apply (aspect-ratio corrected) offset
-		// csPos.x += offset.x / aspectRatio;
-		// csPos.y += offset.y;
-		// o.pos = csPos;
-
-		// return o;
-
-
-		// float2 ssPos = float2(clipPos.x * aspectRatio, clipPos.y);
-		// float2 ssPos_prev = float2(clipPos_prev.x * aspectRatio, clipPos_prev.y);
-		// float2 ssPos_next = float2(clipPos_next.x * aspectRatio, clipPos_next.y);
-		
-		// // screen-space offset vectors from previous/next to current:
-		// float2 scrPos = ssPos.xy/clipPos.w;
-		
-		// float2 lineDirProj_prev = scaledLineWidth * normalize(
-		// 	scrPos - ssPos_prev.xy/clipPos_prev.w
-		// ) * sign(clipPos.w) * sign(clipPos_prev.w);
-
-		// float2 lineDirProj_next = scaledLineWidth * normalize(
-		// 	scrPos - ssPos_next.xy/clipPos_next.w
-		// ) * sign(clipPos.w) * sign(clipPos_next.w);
-		
-		// if (distance(v.prevPos, v.nextPos) < 1.0)
-		// {
-		// 	float2 offset =
-		// 		v.texcoord1.x * lineDirProj_prev +
-		// 		v.texcoord1.y * float2(lineDirProj_prev.y, -lineDirProj_prev.x)
-		// 	;
-		// 	clipPos.x += offset.x / aspectRatio;
-		// 	clipPos.y += offset.y;
-		// }
-		// else
-		// {
-		// 	float2 deltaNextPrev = lineDirProj_prev - lineDirProj_next;
-		// 	float2 offset = 0.5 * (
-		// 		v.texcoord1.x * deltaNextPrev +
-		// 		v.texcoord1.y * float2(deltaNextPrev.y, -deltaNextPrev.x)
-		// 	);
-		// 	clipPos.x += offset.x / aspectRatio;
-		// 	clipPos.y += offset.y;
-		// }
-		
-		// o.pos = clipPos;
-		return o;
 	}
 
 	// Fragment shader
@@ -141,7 +90,16 @@
 		fixed4 tx = tex2D(_MainTex, i.uv);
 		
 #ifdef LIGHT_SABER_MODE_ON
-		return tx.a > _LightSaberFactor ? float4(1.0, 1.0, 1.0, tx.a) : tx * _Color;
+		if (_UvBasedLightSaberFactor == 1) 
+		{
+			float2 uv2 = i.uv * 2.0 - 1.0;
+			float c = sqrt(uv2[0] * uv2[0] + uv2[1] * uv2[1]);
+			return lerp(tx * _Color, float4(1.0, 1.0, 1.0, tx.a), clamp((1.02 - c - _LightSaberFactor) * 100.0, 0, 1));
+		}
+		else 
+		{
+			return tx.a > _LightSaberFactor ? float4(1.0, 1.0, 1.0, tx.a) : tx * _Color;
+		}
 #else
 		return tx;
 #endif
