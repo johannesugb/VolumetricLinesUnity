@@ -17,6 +17,9 @@
 /// Shader code optimization and cleanup by Lex Darlog (aka DRL)
 /// http://forum.unity3d.com/members/lex-drl.67487/
 /// 
+/// Single Pass Stereo Support by Unity Forum User "Abnormalia_"
+/// https://forum.unity.com/members/abnormalia_.356336/ 
+/// 
 Shader "VolumetricLine/SingleLine-LightSaber" {
 	Properties {
 		[NoScaleOffset] _MainTex ("Base (RGB)", 2D) = "white" {}
