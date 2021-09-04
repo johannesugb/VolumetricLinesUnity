@@ -19,6 +19,8 @@
 /// 
 /// Single Pass Stereo Support by Unity Forum User "Abnormalia_"
 /// https://forum.unity.com/members/abnormalia_.356336/ 
+///
+/// Single pass instanced rendering fix by Niel 
 /// 
 Shader "VolumetricLine/LineStrip-TextureAlphaBlended" {
 	Properties {
