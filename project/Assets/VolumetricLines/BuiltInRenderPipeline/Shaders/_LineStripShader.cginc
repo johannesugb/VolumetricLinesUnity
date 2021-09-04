@@ -21,6 +21,8 @@
 		float3 nextPos : TANGENT;
 		half2 texcoord : TEXCOORD0;
 		float2 texcoord1 : TEXCOORD1;
+
+		UNITY_VERTEX_INPUT_INSTANCE_ID
 	};
 	
 	// Vertex out/fragment in data:
@@ -28,12 +30,20 @@
 	{
 		float4 pos : SV_POSITION;
 		half2 uv : TEXCOORD0;
+
+		UNITY_VERTEX_INPUT_INSTANCE_ID
+		UNITY_VERTEX_OUTPUT_STEREO
 	};
 	
 	// Vertex shader
 	v2f vert (a2v v)
 	{
 		v2f o;
+						
+		UNITY_SETUP_INSTANCE_ID(v);
+		UNITY_INITIALIZE_OUTPUT(v2f, o);
+		UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
 		// Pass on texture coordinates to fragment shader as they are:
 		o.uv = v.texcoord;
 		
