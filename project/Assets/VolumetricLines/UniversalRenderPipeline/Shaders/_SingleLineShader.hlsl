@@ -9,6 +9,7 @@
 	float _LineScale;
 #ifdef LIGHT_SABER_MODE_ON
 	float _LightSaberFactor;
+	int _UvBasedLightSaberFactor;
 	float4 _Color;
 #endif
 
@@ -19,6 +20,8 @@
 		float3 otherPos : NORMAL; // object-space position of the other end
 		half2 texcoord : TEXCOORD0;
 		float2 texcoord1 : TEXCOORD1;
+
+		UNITY_VERTEX_INPUT_INSTANCE_ID
 	};
 	
 	// Vertex out/fragment in data:
@@ -26,12 +29,20 @@
 	{
 		float4 pos : SV_POSITION;
 		half2 uv : TEXCOORD0;
+
+		UNITY_VERTEX_INPUT_INSTANCE_ID
+			UNITY_VERTEX_OUTPUT_STEREO
 	};
 	
 	// Vertex shader
 	v2f vert (a2v v)
 	{
 		v2f o;
+
+		UNITY_SETUP_INSTANCE_ID(v);
+		UNITY_INITIALIZE_OUTPUT(v2f, o);
+		UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
 		// Pass on texture coordinates to fragment shader as they are:
 		o.uv = v.texcoord;
 		
@@ -46,12 +57,12 @@
 		float projScale = unity_CameraProjection._m11 * 0.5;
 		float scaledLineWidth = _LineWidth * _LineScale * projScale;
 
+		float aspectRatio = _ScreenParams.x / _ScreenParams.y;
+		// The line direction in (aspect-ratio corrected) clip space (and scaled by witdh):
 		float2 lineDirProj = normalize(
-			csPos.xy / csPos.w - 				// clip-space pos of current end
-			csPos_other.xy / csPos_other.w 		// clip-space position of the other end
-		)
-		 * scaledLineWidth						// scale the offsets based on the line width
-		 * sign(csPos.w) * sign(csPos_other.w);	// correct the cases when one end points is outside of the frustum
+			csPos.xy * aspectRatio / csPos.w - // screen-space pos of current end
+			csPos_other.xy * aspectRatio / csPos_other.w // screen-space position of the other end
+		) * sign(csPos.w) * sign(csPos_other.w) * scaledLineWidth;
 		
 		// Offset for our current vertex:
 		float2 offset =
@@ -60,7 +71,6 @@
 		;
 		
 		// Apply (aspect-ratio corrected) offset
-		float aspectRatio = _ScreenParams.x / _ScreenParams.y;
 		csPos.x += offset.x / aspectRatio;
 		csPos.y += offset.y;
 		o.pos = csPos;
@@ -71,10 +81,19 @@
 	// Fragment shader
 	float4 frag(v2f i) : SV_Target
 	{
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 		float4 tx = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
 		
-#ifdef LIGHT_SABER_MODE_ON
-		return tx.a > _LightSaberFactor ? float4(1.0, 1.0, 1.0, tx.a) : tx * _Color;
+		if (_UvBasedLightSaberFactor == 1) 
+		{
+			float2 uv2 = i.uv * 2.0 - 1.0;
+			float c = sqrt(uv2[0] * uv2[0] + uv2[1] * uv2[1]);
+			return lerp(tx * _Color, float4(1.0, 1.0, 1.0, tx.a), clamp((1.02 - c - _LightSaberFactor) * 100.0, 0, 1));
+		}
+		else 
+		{
+			return tx.a > _LightSaberFactor ? float4(1.0, 1.0, 1.0, tx.a) : tx * _Color;
+		}
 #else
 		return tx;
 #endif
