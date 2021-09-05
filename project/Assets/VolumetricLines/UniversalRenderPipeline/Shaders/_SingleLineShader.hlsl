@@ -40,7 +40,7 @@
 		v2f o;
 
 		UNITY_SETUP_INSTANCE_ID(v);
-		UNITY_INITIALIZE_OUTPUT(v2f, o);
+		ZERO_INITIALIZE(v2f, o);
 		UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
 		// Pass on texture coordinates to fragment shader as they are:
@@ -82,8 +82,10 @@
 	float4 frag(v2f i) : SV_Target
 	{
 		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+
 		float4 tx = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
 		
+#ifdef LIGHT_SABER_MODE_ON
 		if (_UvBasedLightSaberFactor == 1) 
 		{
 			float2 uv2 = i.uv * 2.0 - 1.0;
