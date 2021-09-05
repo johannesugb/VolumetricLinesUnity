@@ -41,3 +41,13 @@ The following packages were added:
   com.unity.modules.vr@1.0.0
   com.unity.modules.wind@1.0.0
   com.unity.modules.xr@1.0.0
+
+=== Sun Sep  5 12:26:28 2021
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were updated:
+  com.unity.analytics from version 3.2.2 to 3.2.3
+  com.unity.package-manager-ui from version 2.0.8 to 2.0.13
+  com.unity.purchasing from version 2.0.3 to 2.2.1
