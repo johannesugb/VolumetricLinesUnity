@@ -59,7 +59,7 @@
 		float projScale = unity_CameraProjection._m11 * 0.5;
 		float scaledLineWidth = _LineWidth * _LineScale * projScale;
 
-		float aspectRatio = _ScreenParams.x / _ScreenParams.y;
+		float aspectRatio = unity_CameraProjection._m11 / unity_CameraProjection._m00;
 		// The line direction in (aspect-ratio corrected) clip space (and scaled by witdh):
 		float2 lineDirProj_prev = normalize(
 			csPos.xy * aspectRatio / csPos.w - // screen-space pos of current end
